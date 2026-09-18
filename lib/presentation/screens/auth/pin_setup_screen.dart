@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../data/models/auth_models.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/pin_input.dart';
 
@@ -79,8 +80,12 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     if (!mounted) return;
 
     if (ok) {
+      // Rol sessiyada keladi: o'quvchi va ota-ona turli oqimga tushadi.
+      final AuthSession? session = ref.read(authControllerProvider).session;
       Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.shell, (Route<dynamic> r) => false);
+        session == null ? AppRoutes.shell : shellRouteFor(session.role),
+        (Route<dynamic> r) => false,
+      );
     } else {
       setState(() {
         _stage = _SetupStage.create;

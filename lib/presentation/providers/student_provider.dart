@@ -10,7 +10,7 @@ import 'auth_provider.dart';
 final FutureProvider<StudentModel> studentProfileProvider =
     FutureProvider<StudentModel>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getProfile(studentId);
 });
 
@@ -18,7 +18,7 @@ final FutureProvider<StudentModel> studentProfileProvider =
 final FutureProvider<List<GradeModel>> gradesProvider =
     FutureProvider<List<GradeModel>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getGrades(studentId);
 });
 
@@ -26,7 +26,7 @@ final FutureProvider<List<GradeModel>> gradesProvider =
 final FutureProvider<List<SubjectGrades>> gradesBySubjectProvider =
     FutureProvider<List<SubjectGrades>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getGradesBySubject(studentId);
 });
 
@@ -34,13 +34,13 @@ final FutureProvider<List<SubjectGrades>> gradesBySubjectProvider =
 final FutureProvider<ProgressSummary> progressProvider =
     FutureProvider<ProgressSummary>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getProgress(studentId);
 });
 
 /// Jami XP.
 final FutureProvider<int> totalXpProvider = FutureProvider<int>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getTotalXP(studentId);
 });

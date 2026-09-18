@@ -44,6 +44,7 @@ class FakeAuthDatasource implements AuthDatasource {
     return PhoneCheckResult.fromJson(<String, dynamic>{
       'phone': digits,
       'registered': isRegistered,
+      'role': _roleOf(digits).apiValue,
       'masked_name': isRegistered ? 'A***v' : null,
     });
   }
@@ -105,12 +106,24 @@ class FakeAuthDatasource implements AuthDatasource {
 
   // ------------------------------------------------------------- yordamchilar
 
+  /// Fake rejimda rol operator kodidan aniqlanadi:
+  /// `+998 33 ...` → ota-ona, qolganlari → o'quvchi.
+  /// Real API'da bu ma'lumot serverdan keladi.
+  UserRole _roleOf(String normalizedPhone) {
+    final String operatorCode = normalizedPhone.substring(4, 6);
+    return operatorCode == AppConstants.fakeParentOperatorCode
+        ? UserRole.parent
+        : UserRole.student;
+  }
+
   /// Server qaytaradigan JSON'ga mos sessiya yasaydi.
   AuthSession _buildSession({required String phone, required String deviceId}) {
+    final UserRole role = _roleOf(phone);
     return AuthSession.fromJson(<String, dynamic>{
       'access': _fakeToken(),
       'refresh': _fakeToken(),
-      'student_id': MockData.studentId,
+      'user_id': role.isParent ? MockData.parentId : MockData.studentId,
+      'role': role.apiValue,
       'phone': phone,
       'device_id': deviceId,
       'expires_at':

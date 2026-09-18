@@ -1,12 +1,17 @@
 import 'package:acadium_student/core/error/app_exception.dart';
 import 'package:acadium_student/core/network/api_client.dart';
 import 'package:acadium_student/data/datasources/fake_auth_datasource.dart';
+import 'package:acadium_student/data/datasources/fake_parent_datasource.dart';
 import 'package:acadium_student/data/datasources/fake_student_datasource.dart';
 import 'package:acadium_student/data/datasources/mock/mock_data.dart';
 import 'package:acadium_student/data/datasources/mock/mock_state.dart';
 import 'package:acadium_student/data/models/arena_task_model.dart';
 import 'package:acadium_student/data/models/auth_models.dart';
+import 'package:acadium_student/data/models/child_model.dart';
+import 'package:acadium_student/data/models/parent_model.dart';
+import 'package:acadium_student/data/models/payment_model.dart';
 import 'package:acadium_student/data/models/grade_model.dart';
+import 'package:acadium_student/data/models/notification_model.dart';
 import 'package:acadium_student/data/models/homework_model.dart';
 import 'package:acadium_student/data/models/student_model.dart';
 import 'package:acadium_student/data/models/xp_model.dart';
@@ -135,7 +140,8 @@ void main() {
         deviceId: 'device-1',
       );
       expect(session.accessToken, startsWith('fake.'));
-      expect(session.studentId, MockData.studentId);
+      expect(session.userId, MockData.studentId);
+      expect(session.role, UserRole.student);
 
       expect(
         () => auth.loginWithPin(
@@ -289,6 +295,116 @@ void main() {
       await ds.claimArenaReward(firstStepId);
       final StudentModel profile = await ds.getProfile('x');
       expect(profile.totalXp, MockData.totalXp + 50);
+    });
+  });
+
+
+  group('Parent — ota-ona oqimi', () {
+    test('rol telefon raqamdan aniqlanadi', () async {
+      final FakeAuthDatasource auth = FakeAuthDatasource(api);
+
+      // 33 — ota-ona operator kodi.
+      final AuthSession parentSession = await auth.loginWithPin(
+        phone: '+998331234567',
+        pin: '1234',
+        deviceId: 'device-1',
+      );
+      expect(parentSession.role, UserRole.parent);
+      expect(parentSession.userId, MockData.parentId);
+
+      // Boshqa kod — o'quvchi.
+      final AuthSession studentSession = await auth.loginWithPin(
+        phone: '+998901234567',
+        pin: '1234',
+        deviceId: 'device-1',
+      );
+      expect(studentSession.role, UserRole.student);
+      expect(studentSession.userId, MockData.studentId);
+
+      // checkPhone ham rolni qaytaradi.
+      expect((await auth.checkPhone('+998331234567')).role, UserRole.parent);
+    });
+
+    test('ota-onaga 2 ta farzand bog\'langan', () async {
+      final FakeParentDatasource ds = FakeParentDatasource(api);
+      final ParentModel profile = await ds.getProfile(MockData.parentId);
+      final List<ChildModel> children =
+          await ds.getChildren(MockData.parentId);
+
+      expect(profile.fullName, 'Sanjar Tursunov');
+      expect(profile.childrenCount, 2);
+      expect(children.length, 2);
+      // Birinchi farzand — Student ilovasidagi o'sha o'quvchi.
+      expect(children.first.id, MockData.studentId);
+      expect(children.last.fullName, 'Zilola Tursunova');
+    });
+
+    test('har bir farzandning ma\'lumotlari alohida', () async {
+      final FakeParentDatasource ds = FakeParentDatasource(api);
+
+      final List<GradeModel> amirGrades =
+          await ds.getChildGrades(MockData.studentId);
+      final List<GradeModel> zilolaGrades =
+          await ds.getChildGrades(MockData.secondChildId);
+
+      expect(amirGrades.length, isNot(zilolaGrades.length));
+      expect(
+        zilolaGrades.any((GradeModel g) => g.title == 'Kasrlar — nazorat ishi'),
+        isTrue,
+      );
+
+      final List<HomeworkModel> zilolaHomework =
+          await ds.getChildHomework(MockData.secondChildId);
+      expect(zilolaHomework.length, 2);
+    });
+
+    test('summary davomat, vazifa va baholardan hisoblanadi', () async {
+      final FakeParentDatasource ds = FakeParentDatasource(api);
+      final ChildSummary summary =
+          await ds.getChildSummary(MockData.studentId);
+
+      expect(summary.childId, MockData.studentId);
+      expect(summary.attendanceRate, inInclusiveRange(0, 1));
+      expect(summary.averageGrade, inInclusiveRange(0, 100));
+      expect(summary.pendingHomework, greaterThan(0));
+      expect(summary.paymentStatusLabel, isNotEmpty);
+    });
+
+    test('noma\'lum farzand so\'ralsa xatolik', () {
+      final FakeParentDatasource ds = FakeParentDatasource(api);
+      expect(
+        () => ds.getChildAttendance('yo-q-id'),
+        throwsA(isA<NotFoundException>()),
+      );
+    });
+
+    test("to'lovlar kechikkanidan boshlab saralanadi", () async {
+      final FakeParentDatasource ds = FakeParentDatasource(api);
+      final List<PaymentModel> payments =
+          await ds.getPayments(MockData.parentId);
+
+      expect(payments.length, 3);
+      expect(payments.first.status, PaymentStatus.overdue);
+      expect(payments.last.status, PaymentStatus.paid);
+
+      final PaymentModel overdue = payments.first;
+      expect(overdue.remainingAmount, 400000);
+      expect(overdue.daysLeft, lessThan(0));
+      expect(overdue.isFullyPaid, isFalse);
+    });
+
+    test('bildirishnomalar farzand nomi bilan keladi', () async {
+      final FakeParentDatasource ds = FakeParentDatasource(api);
+      final List<NotificationModel> items =
+          await ds.getNotifications(MockData.parentId);
+
+      expect(items.length, 5);
+      expect(items.any((NotificationModel n) => n.childName != null), isTrue);
+
+      await ds.markAllNotificationsRead(MockData.parentId);
+      final List<NotificationModel> after =
+          await ds.getNotifications(MockData.parentId);
+      expect(after.every((NotificationModel n) => n.isRead), isTrue);
     });
   });
 

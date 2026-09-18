@@ -36,7 +36,7 @@ final Provider<AsyncValue<LeaderboardEntry?>> myRankProvider =
 final FutureProvider<List<ArenaTaskModel>> arenaTasksProvider =
     FutureProvider<List<ArenaTaskModel>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getArenaTasks(studentId);
 });
 
@@ -163,7 +163,7 @@ final StateNotifierProvider<ArenaSubmitController, ArenaSubmitState>
 final FutureProvider<List<XpLogModel>> xpLogsProvider =
     FutureProvider<List<XpLogModel>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   final List<XpLogModel> logs = await repo.getXpLogs(studentId);
   logs.sort((XpLogModel a, XpLogModel b) => b.createdAt.compareTo(a.createdAt));
   return logs;

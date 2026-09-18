@@ -2,7 +2,37 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 
-/// Pastki navigatsiya tablari.
+/// Bitta navigatsiya elementi (Student va Parent oqimi uchun umumiy).
+class NavItem {
+  const NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+}
+
+/// Ota-ona ilovasining tablari.
+enum ParentTab {
+  home(Icons.home_rounded, Icons.home_outlined, 'Bosh sahifa'),
+  children(Icons.family_restroom_rounded, Icons.family_restroom_outlined,
+      'Farzandlar'),
+  payments(Icons.payments_rounded, Icons.payments_outlined, "To'lovlar"),
+  profile(Icons.person_rounded, Icons.person_outline_rounded, 'Profil');
+
+  const ParentTab(this.activeIcon, this.icon, this.label);
+
+  final IconData activeIcon;
+  final IconData icon;
+  final String label;
+
+  NavItem get item => NavItem(icon: icon, activeIcon: activeIcon, label: label);
+}
+
+/// O'quvchi ilovasining tablari.
 enum AppTab {
   home(Icons.home_rounded, Icons.home_outlined, 'Bosh sahifa'),
   schedule(
@@ -16,18 +46,22 @@ enum AppTab {
   final IconData activeIcon;
   final IconData icon;
   final String label;
+
+  NavItem get item => NavItem(icon: icon, activeIcon: activeIcon, label: label);
 }
 
-/// 5 ta tabli maxsus bottom navigation bar.
+/// Maxsus bottom navigation bar (element soni [items] orqali beriladi).
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
+    required this.items,
   });
 
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final List<NavItem> items;
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +81,8 @@ class AppBottomNavBar extends StatelessWidget {
         child: SizedBox(
           height: 66,
           child: Row(
-            children: List<Widget>.generate(AppTab.values.length, (int index) {
-              final AppTab tab = AppTab.values[index];
+            children: List<Widget>.generate(items.length, (int index) {
+              final NavItem tab = items[index];
               final bool isActive = index == currentIndex;
 
               return Expanded(

@@ -13,6 +13,12 @@ class MockData {
   static const String studentId = '9f8b1c2d-4e5a-4f6b-8c7d-1a2b3c4d5e6f';
   static const String groupId = '1b2c3d4e-5f60-4a71-8b92-0c1d2e3f4a5b';
 
+  /// Ota-ona va uning ikkinchi farzandi (birinchisi — yuqoridagi [studentId]).
+  static const String parentId = '7c6d5e4f-3a2b-4c1d-9e8f-0a1b2c3d4e5f';
+  static const String secondChildId = '2e3f4a5b-6c7d-4e8f-9a0b-1c2d3e4f5a6b';
+  static const String secondChildGroupId =
+      '5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d';
+
   // ------------------------------------------------------------- Yordamchilar
 
   /// Bugungi kunning 00:00 vaqti.
@@ -751,6 +757,305 @@ class MockData {
           'created_at': _iso(DateTime.now().subtract(const Duration(days: 5))),
           'is_read': true,
           'target_id': 'cc000001-0000-4000-8000-000000000004',
+        },
+      ];
+
+  // ======================================================================
+  //                         OTA-ONA (PARENT) OQIMI
+  // ======================================================================
+
+  /// Ota-ona profili.
+  static Map<String, dynamic> parent() => <String, dynamic>{
+        'id': parentId,
+        'first_name': 'Sanjar',
+        'last_name': 'Tursunov',
+        'phone': '+998331234567',
+        'children_count': 2,
+        'created_at': _iso(_today.subtract(const Duration(days: 96))),
+        'avatar_url': null,
+      };
+
+  /// Ota-onaga bog'langan farzandlar.
+  /// Birinchisi — Student ilovasidagi o'sha o'quvchi (bir xil ID).
+  static List<Map<String, dynamic>> children() => <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': studentId,
+          'first_name': 'Amir',
+          'last_name': 'Tursunov',
+          'group_name': 'IELTS Intensive — B2',
+          'branch_name': 'Chilonzor filiali',
+          'total_xp': totalXp,
+          'level': 7,
+          'enrolled_at': _iso(_today.subtract(const Duration(days: 96))),
+          'avatar_url': null,
+        },
+        <String, dynamic>{
+          'id': secondChildId,
+          'first_name': 'Zilola',
+          'last_name': 'Tursunova',
+          'group_name': 'Matematika — 5-sinf',
+          'branch_name': 'Chilonzor filiali',
+          'total_xp': 860,
+          'level': 5,
+          'enrolled_at': _iso(_today.subtract(const Duration(days: 54))),
+          'avatar_url': null,
+        },
+      ];
+
+  static bool _isFirstChild(String childId) => childId == studentId;
+
+  /// Farzandning dars jadvali.
+  static List<Map<String, dynamic>> childSchedule(String childId) =>
+      _isFirstChild(childId) ? lessons() : _secondChildLessons();
+
+  /// Farzandning davomat tarixi.
+  static List<Map<String, dynamic>> childAttendance(String childId) =>
+      _isFirstChild(childId) ? attendance() : _secondChildAttendance();
+
+  /// Farzandning uy vazifalari.
+  static List<Map<String, dynamic>> childHomework(String childId) =>
+      _isFirstChild(childId) ? homework() : _secondChildHomework();
+
+  /// Farzandning baholari.
+  static List<Map<String, dynamic>> childGrades(String childId) =>
+      _isFirstChild(childId) ? grades() : _secondChildGrades();
+
+  // ------------------------------------------------- ikkinchi farzand (Zilola)
+
+  static List<Map<String, dynamic>> _secondChildLessons() {
+    const List<List<Object>> plan = <List<Object>>[
+      <Object>[1, 'Matematika', "Kasrlar bilan amallar", '102-xona'],
+      <Object>[2, 'Ona tili', "Matn ustida ishlash", '103-xona'],
+      <Object>[4, 'Matematika', "Geometrik shakllar", '102-xona'],
+      <Object>[5, 'Ingliz tili', 'Family and friends', '204-xona'],
+    ];
+
+    return List<Map<String, dynamic>>.generate(plan.length, (int i) {
+      final List<Object> row = plan[i];
+      final DateTime start = _at(row[0] as int, 9, 0);
+      return <String, dynamic>{
+        'id': 'ac00000$i-0000-4000-8000-000000000001',
+        'subject': row[1] as String,
+        'teacher_name': 'Gulnora Saidova',
+        'room': row[3] as String,
+        'format': 'offline',
+        'starts_at': _iso(start),
+        'ends_at': _iso(start.add(const Duration(minutes: 80))),
+        'topic': row[2] as String,
+      };
+    });
+  }
+
+  static List<Map<String, dynamic>> _secondChildAttendance() {
+    const List<String> subjects = <String>[
+      'Matematika',
+      'Ona tili',
+      'Ingliz tili',
+    ];
+    const List<String> statuses = <String>[
+      'present',
+      'present',
+      'late',
+      'present',
+      'present',
+      'absent',
+      'present',
+      'present',
+      'present',
+      'present',
+    ];
+
+    return List<Map<String, dynamic>>.generate(statuses.length, (int i) {
+      final DateTime date = _today.subtract(Duration(days: (i + 1) * 2));
+      return <String, dynamic>{
+        'id':
+            'ad0000${i.toString().padLeft(2, '0')}-0000-4000-8000-000000000001',
+        'lesson_id': 'ac00000${i % 4}-0000-4000-8000-000000000001',
+        'subject': subjects[i % subjects.length],
+        'date': _iso(date.add(const Duration(hours: 9))),
+        'status': statuses[i],
+        'note': statuses[i] == 'absent' ? 'Sabab ko\'rsatilmagan' : null,
+      };
+    });
+  }
+
+  static List<Map<String, dynamic>> _secondChildHomework() =>
+      <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'ae000001-0000-4000-8000-000000000001',
+          'subject': 'Matematika',
+          'title': 'Kasrlarni qo\'shish — 10 ta misol',
+          'description': 'Daftarda 10 ta misolni yechib keling.',
+          'teacher_name': 'Gulnora Saidova',
+          'assigned_at': _iso(_today.subtract(const Duration(days: 1))),
+          'due_at': _iso(_today.add(const Duration(days: 1, hours: 20))),
+          'status': 'assigned',
+          'max_score': 100,
+          'xp_reward': 40,
+          'score': null,
+          'submitted_at': null,
+          'teacher_comment': null,
+          'attachments': <String>[],
+        },
+        <String, dynamic>{
+          'id': 'ae000001-0000-4000-8000-000000000002',
+          'subject': 'Ona tili',
+          'title': 'Insho: Mening oilam',
+          'description': 'Kamida 10 ta gapdan iborat insho yozing.',
+          'teacher_name': 'Gulnora Saidova',
+          'assigned_at': _iso(_today.subtract(const Duration(days: 6))),
+          'due_at': _iso(_today.subtract(const Duration(days: 3))),
+          'status': 'reviewed',
+          'max_score': 100,
+          'xp_reward': 45,
+          'score': 95,
+          'submitted_at': _iso(_today.subtract(const Duration(days: 4))),
+          'teacher_comment': 'Juda chiroyli yozilgan!',
+          'attachments': <String>[],
+        },
+      ];
+
+  static List<Map<String, dynamic>> _secondChildGrades() =>
+      <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'af000001-0000-4000-8000-000000000001',
+          'subject': 'Matematika',
+          'title': 'Kasrlar — nazorat ishi',
+          'type': 'test',
+          'score': 92,
+          'max_score': 100,
+          'graded_at': _iso(_today.subtract(const Duration(days: 2))),
+          'teacher_name': 'Gulnora Saidova',
+          'comment': null,
+        },
+        <String, dynamic>{
+          'id': 'af000001-0000-4000-8000-000000000002',
+          'subject': 'Ona tili',
+          'title': 'Insho: Mening oilam',
+          'type': 'homework',
+          'score': 95,
+          'max_score': 100,
+          'graded_at': _iso(_today.subtract(const Duration(days: 3))),
+          'teacher_name': 'Gulnora Saidova',
+          'comment': 'Juda chiroyli yozilgan!',
+        },
+        <String, dynamic>{
+          'id': 'af000001-0000-4000-8000-000000000003',
+          'subject': 'Ingliz tili',
+          'title': 'Unit 3 — Vocabulary',
+          'type': 'test',
+          'score': 84,
+          'max_score': 100,
+          'graded_at': _iso(_today.subtract(const Duration(days: 9))),
+          'teacher_name': 'Dilnoza Karimova',
+          'comment': null,
+        },
+        <String, dynamic>{
+          'id': 'af000001-0000-4000-8000-000000000004',
+          'subject': 'Matematika',
+          'title': "Og'zaki hisob",
+          'type': 'oral',
+          'score': 88,
+          'max_score': 100,
+          'graded_at': _iso(_today.subtract(const Duration(days: 14))),
+          'teacher_name': 'Gulnora Saidova',
+          'comment': null,
+        },
+      ];
+
+  // ------------------------------------------------------------- To'lovlar
+
+  /// Farzandlar bo'yicha to'lovlar (har biri uchun joriy davr).
+  static List<Map<String, dynamic>> payments() => <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'b0000001-0000-4000-8000-000000000001',
+          'child_id': studentId,
+          'child_name': 'Amir Tursunov',
+          'period': 'Joriy oy',
+          'total_amount': 1200000,
+          'paid_amount': 1200000,
+          'due_date': _iso(_today.add(const Duration(days: 12))),
+          'status': 'paid',
+          'last_payment_at': _iso(_today.subtract(const Duration(days: 8))),
+        },
+        <String, dynamic>{
+          'id': 'b0000001-0000-4000-8000-000000000002',
+          'child_id': secondChildId,
+          'child_name': 'Zilola Tursunova',
+          'period': 'Joriy oy',
+          'total_amount': 900000,
+          'paid_amount': 400000,
+          'due_date': _iso(_today.add(const Duration(days: 4))),
+          'status': 'due',
+          'last_payment_at': _iso(_today.subtract(const Duration(days: 20))),
+        },
+        <String, dynamic>{
+          'id': 'b0000001-0000-4000-8000-000000000003',
+          'child_id': secondChildId,
+          'child_name': 'Zilola Tursunova',
+          'period': "O'tgan oy",
+          'total_amount': 900000,
+          'paid_amount': 500000,
+          'due_date': _iso(_today.subtract(const Duration(days: 9))),
+          'status': 'overdue',
+          'last_payment_at': _iso(_today.subtract(const Duration(days: 33))),
+        },
+      ];
+
+  // -------------------------------------------------- Ota-ona bildirishnomalari
+
+  static List<Map<String, dynamic>> parentNotifications() =>
+      <Map<String, dynamic>>[
+        <String, dynamic>{
+          'id': 'b2000001-0000-4000-8000-000000000001',
+          'type': 'lesson',
+          'title': 'Farzandingiz darsga keldi',
+          'body': 'Amir bugungi Ingliz tili darsiga o\'z vaqtida keldi.',
+          'created_at': _iso(DateTime.now().subtract(const Duration(hours: 2))),
+          'is_read': false,
+          'target_id': null,
+          'child_name': 'Amir Tursunov',
+        },
+        <String, dynamic>{
+          'id': 'b2000001-0000-4000-8000-000000000002',
+          'type': 'system',
+          'title': "To'lov muddati yaqinlashmoqda",
+          'body': "Zilola uchun 500 000 so'm to'lov 4 kundan keyin.",
+          'created_at': _iso(DateTime.now().subtract(const Duration(hours: 6))),
+          'is_read': false,
+          'target_id': null,
+          'child_name': 'Zilola Tursunova',
+        },
+        <String, dynamic>{
+          'id': 'b2000001-0000-4000-8000-000000000003',
+          'type': 'grade',
+          'title': "Yangi baho qo'yildi",
+          'body': 'Zilola — Matematika nazorat ishi: 92/100.',
+          'created_at': _iso(DateTime.now().subtract(const Duration(days: 2))),
+          'is_read': false,
+          'target_id': null,
+          'child_name': 'Zilola Tursunova',
+        },
+        <String, dynamic>{
+          'id': 'b2000001-0000-4000-8000-000000000004',
+          'type': 'homework',
+          'title': 'Uy vazifasi topshirilmagan',
+          'body': 'Amir uchun 3 ta vazifa muddati yaqinlashmoqda.',
+          'created_at': _iso(DateTime.now().subtract(const Duration(days: 3))),
+          'is_read': true,
+          'target_id': null,
+          'child_name': 'Amir Tursunov',
+        },
+        <String, dynamic>{
+          'id': 'b2000001-0000-4000-8000-000000000005',
+          'type': 'system',
+          'title': 'Ota-onalar yig\'ilishi',
+          'body':
+              'Shanba kuni soat 15:00 da filialda yig\'ilish bo\'lib o\'tadi.',
+          'created_at': _iso(DateTime.now().subtract(const Duration(days: 5))),
+          'is_read': true,
+          'target_id': null,
+          'child_name': null,
         },
       ];
 }

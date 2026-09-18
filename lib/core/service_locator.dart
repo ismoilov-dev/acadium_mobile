@@ -2,9 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/datasources/auth_datasource.dart';
 import '../data/datasources/fake_auth_datasource.dart';
+import '../data/datasources/fake_parent_datasource.dart';
 import '../data/datasources/fake_student_datasource.dart';
+import '../data/datasources/parent_datasource.dart';
 import '../data/datasources/student_datasource.dart';
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/parent_repository.dart';
 import '../data/repositories/student_repository.dart';
 import 'network/api_client.dart';
 import 'storage/secure_storage_service.dart';
@@ -16,9 +19,9 @@ import 'storage/secure_storage_service.dart';
 /// Butun ilovada qaysi datasource ishlashi SHU FAYLDA hal qilinadi.
 ///
 /// Real backend tayyor bo'lganda:
-///   1. `data/datasources/real_auth_datasource.dart` va
-///      `real_student_datasource.dart` fayllarini yozing (mos interfeyslarni
-///      implement qilib);
+///   1. `data/datasources/real_auth_datasource.dart`,
+///      `real_student_datasource.dart` va `real_parent_datasource.dart`
+///      fayllarini yozing (mos interfeyslarni implement qilib);
 ///   2. `core/network/real_api_client.dart` — http bilan ishlaydigan
 ///      [ApiClient] implementatsiyasini qo'shing;
 ///   3. quyidagi `kUseFakeData` ni `false` qiling (yoki `--dart-define` orqali
@@ -74,6 +77,17 @@ final Provider<StudentDatasource> studentDatasourceProvider =
   throw UnimplementedError('RealStudentDatasource hali yozilmagan.');
 });
 
+/// <<< ALMASHTIRISH NUQTASI 3 (ota-ona oqimi) >>>
+final Provider<ParentDatasource> parentDatasourceProvider =
+    Provider<ParentDatasource>((ref) {
+  final ApiClient api = ref.watch(apiClientProvider);
+  if (kUseFakeData) {
+    return FakeParentDatasource(api);
+  }
+  // return RealParentDatasource(api);
+  throw UnimplementedError('RealParentDatasource hali yozilmagan.');
+});
+
 // -------------------------------------------------------------- Repository'lar
 
 final Provider<AuthRepository> authRepositoryProvider =
@@ -85,4 +99,9 @@ final Provider<AuthRepository> authRepositoryProvider =
 final Provider<StudentRepository> studentRepositoryProvider =
     Provider<StudentRepository>((ref) => StudentRepository(
           datasource: ref.watch(studentDatasourceProvider),
+        ));
+
+final Provider<ParentRepository> parentRepositoryProvider =
+    Provider<ParentRepository>((ref) => ParentRepository(
+          datasource: ref.watch(parentDatasourceProvider),
         ));

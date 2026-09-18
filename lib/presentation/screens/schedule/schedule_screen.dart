@@ -87,8 +87,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                       itemCount: lessons.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: AppSpacing.md),
-                      itemBuilder: (_, int i) =>
-                          _LessonCard(lesson: lessons[i]),
+                      itemBuilder: (_, int i) => LessonCard(lesson: lessons[i]),
                     ),
                   );
                 },
@@ -191,9 +190,9 @@ class _WeekdaySelector extends StatelessWidget {
   }
 }
 
-/// Jadvaldagi bitta dars kartasi.
-class _LessonCard extends StatelessWidget {
-  const _LessonCard({required this.lesson});
+/// Jadvaldagi bitta dars kartasi (Parent oqimida ham ishlatiladi).
+class LessonCard extends StatelessWidget {
+  const LessonCard({super.key, required this.lesson});
 
   final LessonModel lesson;
 

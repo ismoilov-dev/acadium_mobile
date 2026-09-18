@@ -104,6 +104,7 @@ void main() {
 
     // Token secure storage'ga saqlangan va device_id yaratilgan.
     expect(store['acadium_access_token'], isNotNull);
+    expect(store['acadium_role'], 'student');
     expect(store['acadium_device_id'], isNotNull);
 
     // 5. Bottom navigation: Arena tabida reyting ko'rinadi.
@@ -126,7 +127,8 @@ void main() {
       (WidgetTester tester) async {
     _usePhoneScreen(tester);
     store['acadium_access_token'] = 'fake.token.value';
-    store['acadium_student_id'] = '9f8b1c2d-4e5a-4f6b-8c7d-1a2b3c4d5e6f';
+    store['acadium_user_id'] = '9f8b1c2d-4e5a-4f6b-8c7d-1a2b3c4d5e6f';
+    store['acadium_role'] = 'student';
     store['acadium_device_id'] = 'device-uuid';
     store['acadium_phone'] = '+998901234567';
 

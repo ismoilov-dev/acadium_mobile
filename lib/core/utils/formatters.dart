@@ -122,5 +122,20 @@ class Formatters {
         (Match m) => '${m[1]} ',
       );
 
+  /// 1200000 -> "1 200 000 so'm"
+  static String money(int amount) => "${number(amount)} so'm";
+
+  /// 1200000 -> "1.2 mln" (kartalarda joy tejash uchun)
+  static String moneyShort(int amount) {
+    if (amount >= 1000000) {
+      final double mln = amount / 1000000;
+      final String text =
+          mln % 1 == 0 ? mln.toStringAsFixed(0) : mln.toStringAsFixed(1);
+      return '$text mln';
+    }
+    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)} ming';
+    return '$amount';
+  }
+
   static DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 }

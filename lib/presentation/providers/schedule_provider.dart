@@ -9,7 +9,7 @@ import 'auth_provider.dart';
 final FutureProvider<Map<int, List<LessonModel>>> weeklyScheduleProvider =
     FutureProvider<Map<int, List<LessonModel>>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getScheduleByWeekday(studentId);
 });
 
@@ -17,6 +17,6 @@ final FutureProvider<Map<int, List<LessonModel>>> weeklyScheduleProvider =
 final FutureProvider<LessonModel?> nextLessonProvider =
     FutureProvider<LessonModel?>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getNextLesson(studentId);
 });

@@ -10,7 +10,7 @@ import 'auth_provider.dart';
 final FutureProvider<List<HomeworkModel>> homeworkListProvider =
     FutureProvider<List<HomeworkModel>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   return repo.getHomework(studentId);
 });
 

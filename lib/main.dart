@@ -8,6 +8,8 @@ import 'presentation/screens/auth/phone_login_screen.dart';
 import 'presentation/screens/auth/pin_login_screen.dart';
 import 'presentation/screens/auth/pin_setup_screen.dart';
 import 'presentation/screens/notifications/notifications_screen.dart';
+import 'presentation/screens/parent/notifications/parent_notifications_screen.dart';
+import 'presentation/screens/parent/shell/parent_main_shell.dart';
 import 'presentation/screens/shell/main_shell.dart';
 import 'presentation/screens/splash/splash_screen.dart';
 
@@ -46,6 +48,9 @@ class AcadiumApp extends StatelessWidget {
         AppRoutes.pinLogin: (_) => const PinLoginScreen(),
         AppRoutes.shell: (_) => const MainShell(),
         AppRoutes.notifications: (_) => const NotificationsScreen(),
+        // Ota-ona oqimi
+        AppRoutes.parentShell: (_) => const ParentMainShell(),
+        AppRoutes.parentNotifications: (_) => const ParentNotificationsScreen(),
       },
       // Matn o'lchamini qurilma sozlamalaridan qat'i nazar cheklab qo'yamiz,
       // aks holda dizayn buzilishi mumkin.

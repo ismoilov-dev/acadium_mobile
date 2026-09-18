@@ -204,20 +204,29 @@ class _Chip extends StatelessWidget {
 
 /// Ro'yxatdagi bitta uy vazifasi kartasi.
 class HomeworkTile extends StatelessWidget {
-  const HomeworkTile({super.key, required this.homework});
+  const HomeworkTile({
+    super.key,
+    required this.homework,
+    this.readOnly = false,
+  });
 
   final HomeworkModel homework;
+
+  /// Ota-ona ilovasida true: karta faqat ko'rsatadi, detalga o'tmaydi.
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
     final bool overdue = homework.isOverdue;
 
     return AppCard(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => HomeworkDetailScreen(homework: homework),
-        ),
-      ),
+      onTap: readOnly
+          ? null
+          : () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => HomeworkDetailScreen(homework: homework),
+                ),
+              ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[

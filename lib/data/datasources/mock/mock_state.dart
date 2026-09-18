@@ -21,6 +21,9 @@ class MockState {
 
   late List<Map<String, dynamic>> homework;
   late List<Map<String, dynamic>> notifications;
+
+  /// Ota-ona ilovasidagi bildirishnomalar (o'qilgan holati o'zgarib turadi).
+  late List<Map<String, dynamic>> parentNotifications;
   late List<Map<String, dynamic>> arenaTasks;
   late List<Map<String, dynamic>> leaderboard;
   late List<Map<String, dynamic>> xpLogs;
@@ -30,6 +33,7 @@ class MockState {
   void reset() {
     homework = MockData.homework();
     notifications = MockData.notifications();
+    parentNotifications = MockData.parentNotifications();
     arenaTasks = MockData.arenaTasks();
     leaderboard = MockData.leaderboard();
     xpLogs = MockData.xpLogs();

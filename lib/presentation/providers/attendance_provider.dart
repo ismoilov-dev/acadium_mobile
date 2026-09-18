@@ -9,7 +9,7 @@ import 'auth_provider.dart';
 final FutureProvider<List<AttendanceModel>> attendanceProvider =
     FutureProvider<List<AttendanceModel>>((ref) async {
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
-  final String studentId = requireStudentId(ref);
+  final String studentId = requireUserId(ref);
   final List<AttendanceModel> items = await repo.getAttendance(studentId);
   items
       .sort((AttendanceModel a, AttendanceModel b) => b.date.compareTo(a.date));

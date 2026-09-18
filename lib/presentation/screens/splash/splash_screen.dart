@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../data/models/auth_models.dart';
 import '../../providers/auth_provider.dart';
 
 /// Splash: saqlangan token tekshiriladi va tegishli ekranga o'tkaziladi.
@@ -30,10 +31,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
 
-    final AuthFlowStatus status = ref.read(authControllerProvider).status;
+    // Rolga qarab Student yoki Parent oqimiga o'tkazamiz.
+    final AuthState auth = ref.read(authControllerProvider);
+    final AuthSession? session = auth.session;
+
     Navigator.of(context).pushReplacementNamed(
-      status == AuthFlowStatus.authenticated
-          ? AppRoutes.shell
+      auth.status == AuthFlowStatus.authenticated && session != null
+          ? shellRouteFor(session.role)
           : AppRoutes.phoneLogin,
     );
   }

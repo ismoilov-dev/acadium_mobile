@@ -34,6 +34,7 @@ class MainShell extends ConsumerWidget {
         ],
       ),
       bottomNavigationBar: AppBottomNavBar(
+        items: AppTab.values.map((AppTab t) => t.item).toList(),
         currentIndex: index,
         onTap: (int i) => ref.read(shellTabProvider.notifier).state = i,
       ),

@@ -56,11 +56,16 @@ class SecureStorageService {
 
   // --------------------------------------------------------------- sessiya
 
-  Future<void> saveStudentId(String studentId) =>
-      _storage.write(key: AppConstants.keyStudentId, value: studentId);
+  Future<void> saveUserId(String userId) =>
+      _storage.write(key: AppConstants.keyUserId, value: userId);
 
-  Future<String?> readStudentId() =>
-      _storage.read(key: AppConstants.keyStudentId);
+  Future<String?> readUserId() => _storage.read(key: AppConstants.keyUserId);
+
+  /// Foydalanuvchi roli — ilova ochilganda qaysi oqim tiklanishini belgilaydi.
+  Future<void> saveRole(String role) =>
+      _storage.write(key: AppConstants.keyRole, value: role);
+
+  Future<String?> readRole() => _storage.read(key: AppConstants.keyRole);
 
   Future<void> savePhone(String phone) =>
       _storage.write(key: AppConstants.keyPhone, value: phone);
@@ -78,7 +83,8 @@ class SecureStorageService {
   Future<void> clearSession() async {
     await _storage.delete(key: AppConstants.keyAccessToken);
     await _storage.delete(key: AppConstants.keyRefreshToken);
-    await _storage.delete(key: AppConstants.keyStudentId);
+    await _storage.delete(key: AppConstants.keyUserId);
+    await _storage.delete(key: AppConstants.keyRole);
     await _storage.delete(key: AppConstants.keyPhone);
   }
 

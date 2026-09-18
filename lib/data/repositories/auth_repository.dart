@@ -23,7 +23,7 @@ class AuthRepository {
   /// Saqlangan sessiya bormi? Splash ekrani shu metodga tayanadi.
   Future<bool> hasSession() => _storage.hasSession();
 
-  Future<String?> savedStudentId() => _storage.readStudentId();
+  Future<String?> savedUserId() => _storage.readUserId();
 
   Future<String?> savedPhone() => _storage.readPhone();
 
@@ -64,16 +64,18 @@ class AuthRepository {
   /// Saqlangan sessiyani tiklash (ilova qayta ochilganda).
   Future<AuthSession?> restoreSession() async {
     final String? token = await _storage.readAccessToken();
-    final String? studentId = await _storage.readStudentId();
+    final String? userId = await _storage.readUserId();
     final String? phone = await _storage.readPhone();
     final String? device = await _storage.readDeviceId();
+    final String? role = await _storage.readRole();
 
-    if (token == null || studentId == null || device == null) return null;
+    if (token == null || userId == null || device == null) return null;
 
     return AuthSession(
       accessToken: token,
       refreshToken: await _storage.readRefreshToken(),
-      studentId: studentId,
+      userId: userId,
+      role: UserRole.fromApi(role ?? UserRole.student.apiValue),
       phone: phone ?? '',
       deviceId: device,
       // Real API'da muddat token ichidan olinadi; hozircha uzoq muddat.
@@ -98,7 +100,8 @@ class AuthRepository {
       accessToken: session.accessToken,
       refreshToken: session.refreshToken,
     );
-    await _storage.saveStudentId(session.studentId);
+    await _storage.saveUserId(session.userId);
+    await _storage.saveRole(session.role.apiValue);
     await _storage.savePhone(session.phone);
   }
 }

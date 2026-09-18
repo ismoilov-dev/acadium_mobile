@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/error/app_exception.dart';
 import '../../core/service_locator.dart';
 import '../../data/models/auth_models.dart';
@@ -136,21 +137,31 @@ final StateNotifierProvider<AuthController, AuthState> authControllerProvider =
   (ref) => AuthController(ref.watch(authRepositoryProvider)),
 );
 
-/// Joriy o'quvchi ID'si (sessiya bo'lmasa — null).
+/// Joriy foydalanuvchi ID'si (sessiya bo'lmasa — null).
+/// Rolga qarab bu o'quvchi yoki ota-ona ID'si bo'ladi.
 ///
 /// Ataylab null qaytaradi: logout paytida hali ekrandan ketmagan vidjetlar
 /// sinxron xatolik tufayli qulab tushmasligi kerak.
-final Provider<String?> currentStudentIdProvider = Provider<String?>((ref) {
-  return ref.watch(authControllerProvider).session?.studentId;
+final Provider<String?> currentUserIdProvider = Provider<String?>((ref) {
+  return ref.watch(authControllerProvider).session?.userId;
+});
+
+/// Joriy rol (sessiya bo'lmasa — null).
+final Provider<UserRole?> currentRoleProvider = Provider<UserRole?>((ref) {
+  return ref.watch(authControllerProvider).session?.role;
 });
 
 /// Ma'lumot yuklaydigan async provider'lar uchun: ID bo'lmasa xatolik.
 /// `async` blok ichida chaqiriladi, shuning uchun xatolik AsyncValue.error
 /// ko'rinishida UI'ga yetib boradi va ErrorView ko'rsatiladi.
-String requireStudentId(Ref ref) {
-  final String? studentId = ref.watch(currentStudentIdProvider);
-  if (studentId == null) {
+String requireUserId(Ref ref) {
+  final String? userId = ref.watch(currentUserIdProvider);
+  if (userId == null) {
     throw const AuthException('Sessiya topilmadi. Qaytadan kiring.');
   }
-  return studentId;
+  return userId;
 }
+
+/// Rolga mos bosh ekran route'i: o'quvchi va ota-ona turli ilova oqimiga tushadi.
+String shellRouteFor(UserRole role) =>
+    role.isParent ? AppRoutes.parentShell : AppRoutes.shell;

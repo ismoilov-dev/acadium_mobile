@@ -2,25 +2,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/service_locator.dart';
 import '../../data/models/notification_model.dart';
-import '../../data/repositories/student_repository.dart';
+import '../../data/repositories/parent_repository.dart';
 import 'auth_provider.dart';
 
-/// Bildirishnomalar ro'yxatini boshqaradi (o'qilgan deb belgilash bilan).
-class NotificationController
+/// Ota-ona bildirishnomalari (o'qilgan deb belgilash bilan).
+/// Student tomonidagi kontroller bilan bir xil tamoyilda ishlaydi.
+class ParentNotificationController
     extends StateNotifier<AsyncValue<List<NotificationModel>>> {
-  NotificationController(this._repository, this._studentId)
+  ParentNotificationController(this._repository, this._parentId)
       : super(const AsyncValue<List<NotificationModel>>.loading()) {
     load();
   }
 
-  final StudentRepository _repository;
-
-  /// Sessiya yopilganda null bo'ladi (logout paytida).
-  final String? _studentId;
+  final ParentRepository _repository;
+  final String? _parentId;
 
   Future<void> load() async {
-    final String? studentId = _studentId;
-    if (studentId == null) {
+    final String? parentId = _parentId;
+    if (parentId == null) {
       state = const AsyncValue<List<NotificationModel>>.data(
         <NotificationModel>[],
       );
@@ -30,14 +29,13 @@ class NotificationController
     state = const AsyncValue<List<NotificationModel>>.loading();
     try {
       final List<NotificationModel> items =
-          await _repository.getNotifications(studentId);
+          await _repository.getNotifications(parentId);
       if (mounted) state = AsyncValue<List<NotificationModel>>.data(items);
     } catch (e, st) {
       if (mounted) state = AsyncValue<List<NotificationModel>>.error(e, st);
     }
   }
 
-  /// Bittasini o'qilgan deb belgilash (avval UI, keyin server — optimistik).
   Future<void> markRead(String id) async {
     final List<NotificationModel>? current = state.valueOrNull;
     if (current == null) return;
@@ -51,33 +49,32 @@ class NotificationController
     await _repository.markNotificationRead(id);
   }
 
-  /// Barchasini o'qilgan deb belgilash.
   Future<void> markAllRead() async {
     final List<NotificationModel>? current = state.valueOrNull;
-    final String? studentId = _studentId;
-    if (current == null || studentId == null) return;
+    final String? parentId = _parentId;
+    if (current == null || parentId == null) return;
 
     state = AsyncValue<List<NotificationModel>>.data(
       current.map((NotificationModel n) => n.copyWith(isRead: true)).toList(),
     );
-    await _repository.markAllNotificationsRead(studentId);
+    await _repository.markAllNotificationsRead(parentId);
   }
 }
 
-final StateNotifierProvider<NotificationController,
-        AsyncValue<List<NotificationModel>>> notificationsProvider =
-    StateNotifierProvider<NotificationController,
+final StateNotifierProvider<ParentNotificationController,
+        AsyncValue<List<NotificationModel>>> parentNotificationsProvider =
+    StateNotifierProvider<ParentNotificationController,
         AsyncValue<List<NotificationModel>>>(
-  (ref) => NotificationController(
-    ref.watch(studentRepositoryProvider),
+  (ref) => ParentNotificationController(
+    ref.watch(parentRepositoryProvider),
     ref.watch(currentUserIdProvider),
   ),
 );
 
-/// O'qilmagan bildirishnomalar soni (AppBar'dagi nuqta uchun).
-final Provider<int> unreadNotificationsCountProvider = Provider<int>((ref) {
+/// O'qilmagan bildirishnomalar soni.
+final Provider<int> parentUnreadCountProvider = Provider<int>((ref) {
   final List<NotificationModel>? items =
-      ref.watch(notificationsProvider).valueOrNull;
+      ref.watch(parentNotificationsProvider).valueOrNull;
   if (items == null) return 0;
   return items.where((NotificationModel n) => !n.isRead).length;
 });
