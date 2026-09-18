@@ -8,6 +8,7 @@ import '../../providers/homework_provider.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/gradient_button.dart';
 import '../../widgets/homework_status_badge.dart';
+import 'ai_chat_screen.dart';
 
 /// Uy vazifasi tafsilotlari va topshirish oqimi.
 class HomeworkDetailScreen extends ConsumerWidget {
@@ -31,6 +32,19 @@ class HomeworkDetailScreen extends ConsumerWidget {
       );
       Navigator.of(context).pop();
     }
+  }
+
+  /// AI yordamchini AYNAN shu vazifa konteksti bilan ochadi.
+  /// Chat ekraniga yagona kirish nuqtasi — shu metod.
+  void _openAiChat(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => AiChatScreen(
+          homeworkId: homework.id,
+          homeworkTitle: homework.title,
+        ),
+      ),
+    );
   }
 
   @override
@@ -220,23 +234,36 @@ class HomeworkDetailScreen extends ConsumerWidget {
           ],
         ),
       ),
-      bottomNavigationBar: homework.canSubmit
-          ? Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
-                boxShadow: AppShadows.card,
-              ),
-              child: SafeArea(
-                top: false,
-                child: GradientButton(
+      // Pastki panel: asosiy "Topshirish" tugmasi va undan keyin ikkinchi
+      // darajali AI tugmasi. AI yordam vazifa topshirilgandan keyin ham
+      // kerak bo'lishi mumkin, shuning uchun u har doim ko'rinadi.
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          boxShadow: AppShadows.card,
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (homework.canSubmit) ...<Widget>[
+                GradientButton(
                   label: 'Topshirish',
                   icon: Icons.send_rounded,
                   onPressed: () => _openSubmitSheet(context, ref),
                 ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+              SecondaryButton(
+                label: "🤖 AI'dan yordam so'rash",
+                onPressed: () => _openAiChat(context),
               ),
-            )
-          : null,
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

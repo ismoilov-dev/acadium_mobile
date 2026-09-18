@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/datasources/ai_assistant_datasource.dart';
 import '../data/datasources/auth_datasource.dart';
+import '../data/datasources/fake_ai_assistant_datasource.dart';
 import '../data/datasources/fake_auth_datasource.dart';
 import '../data/datasources/fake_parent_datasource.dart';
 import '../data/datasources/fake_student_datasource.dart';
 import '../data/datasources/parent_datasource.dart';
 import '../data/datasources/student_datasource.dart';
+import '../data/repositories/ai_assistant_repository.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/repositories/parent_repository.dart';
 import '../data/repositories/student_repository.dart';
@@ -20,8 +23,9 @@ import 'storage/secure_storage_service.dart';
 ///
 /// Real backend tayyor bo'lganda:
 ///   1. `data/datasources/real_auth_datasource.dart`,
-///      `real_student_datasource.dart` va `real_parent_datasource.dart`
-///      fayllarini yozing (mos interfeyslarni implement qilib);
+///      `real_student_datasource.dart`, `real_parent_datasource.dart` va
+///      `real_ai_assistant_datasource.dart` fayllarini yozing
+///      (mos interfeyslarni implement qilib);
 ///   2. `core/network/real_api_client.dart` — http bilan ishlaydigan
 ///      [ApiClient] implementatsiyasini qo'shing;
 ///   3. quyidagi `kUseFakeData` ni `false` qiling (yoki `--dart-define` orqali
@@ -88,6 +92,28 @@ final Provider<ParentDatasource> parentDatasourceProvider =
   throw UnimplementedError('RealParentDatasource hali yozilmagan.');
 });
 
+/// <<< ALMASHTIRISH NUQTASI 4 (AI yordamchi — Vazifalar bo'limi) >>>
+///
+/// TODO(gemini): `data/datasources/real_ai_assistant_datasource.dart` yozilsin.
+/// Real implementatsiya:
+///   * `AiAssistantDatasource` interfeysini implement qiladi (2 ta metod);
+///   * Gemini API'ga so'rov yuboradi, kalit `--dart-define=GEMINI_API_KEY=...`
+///     orqali beriladi (kalit kodga YOZILMAYDI);
+///   * system prompt'da tutor qoidalari bo'ladi: tayyor javob berilmaydi,
+///     faqat savol/yo'nalish beriladi, javob qisqa va rag'batlantiruvchi;
+///   * `homeworkId` bo'yicha vazifa matni kontekst sifatida qo'shiladi.
+/// Shundan keyin pastdagi ikki qator almashtiriladi — boshqa hech qayerga
+/// tegilmaydi (model, repository, provider va chat ekrani o'zgarmaydi).
+final Provider<AiAssistantDatasource> aiAssistantDatasourceProvider =
+    Provider<AiAssistantDatasource>((ref) {
+  final ApiClient api = ref.watch(apiClientProvider);
+  if (kUseFakeData) {
+    return FakeAiAssistantDatasource(api);
+  }
+  // return RealAiAssistantDatasource(api);
+  throw UnimplementedError('RealAiAssistantDatasource hali yozilmagan.');
+});
+
 // -------------------------------------------------------------- Repository'lar
 
 final Provider<AuthRepository> authRepositoryProvider =
@@ -104,4 +130,9 @@ final Provider<StudentRepository> studentRepositoryProvider =
 final Provider<ParentRepository> parentRepositoryProvider =
     Provider<ParentRepository>((ref) => ParentRepository(
           datasource: ref.watch(parentDatasourceProvider),
+        ));
+
+final Provider<AiAssistantRepository> aiAssistantRepositoryProvider =
+    Provider<AiAssistantRepository>((ref) => AiAssistantRepository(
+          datasource: ref.watch(aiAssistantDatasourceProvider),
         ));

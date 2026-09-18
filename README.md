@@ -38,7 +38,7 @@ Minimal talab: **Flutter 3.27+** (`Color.withValues` ishlatilgan).
 
 ```
 flutter analyze   → No issues found!
-flutter test      → 32/32 test passed
+flutter test      → 39/39 test passed
 flutter build web → ✓ Built build/web
 ```
 
@@ -50,7 +50,10 @@ Testlar:
   → 1234 → Home → Arena → Profil) va arena testini yechib +120 XP olish;
 * `test/parent_flow_test.dart` — Parent oqimi (telefon `33...` → PIN → Parent
   Home → Farzandlar → farzand tanlash → Child Detail → Baholar tabi →
-  To'lovlar).
+  To'lovlar);
+* `test/ai_assistant_test.dart` — AI Yordamchi (tutor xulqi: tayyor javob
+  so'ralsa rad etish, haqiqiy savolni rad etmaslik; vazifa detalidan chat
+  ochilishi → boshlang'ich xabar → savol yuborish → fake javob).
 
 > Agar loyihani boshqa kompyuterga ko'chirsangiz va native papkalar yo'q bo'lsa,
 > `./setup.sh` ularni qayta yaratadi (lib/ va pubspec.yaml ga tegmaydi).
@@ -97,9 +100,11 @@ lib/
 │   │   ├── auth_datasource.dart          # ABSTRACT
 │   │   ├── student_datasource.dart       # ABSTRACT
 │   │   ├── parent_datasource.dart        # ABSTRACT
+│   │   ├── ai_assistant_datasource.dart  # ABSTRACT (AI yordamchi)
 │   │   ├── fake_auth_datasource.dart     # hozirgi implementatsiya
 │   │   ├── fake_student_datasource.dart  # hozirgi implementatsiya
 │   │   ├── fake_parent_datasource.dart   # hozirgi implementatsiya
+│   │   ├── fake_ai_assistant_datasource.dart
 │   │   └── mock/mock_data.dart           # backend formatidagi mock JSON
 │   └── repositories/                     # UI ↔ datasource orasidagi qatlam
 │
@@ -171,7 +176,7 @@ headers={Content-Type: application/json, X-Device-Id: <uuid>,
 |---|---|
 | **Home** | Salomlashish, XP kartasi, keyingi dars (jonli countdown), kutilayotgan vazifalar soni, davomat %, oxirgi 3 baho |
 | **Schedule** | Haftalik jadval, kunlar bo'yicha gorizontal tanlash, dars kartalari |
-| **Homework** | Status filtrlari (Berilgan/Topshirilgan/Kechikkan/Tekshirilgan) + sonlari, detal sahifa, topshirish oynasi (matn + fayl tanlash simulyatsiyasi) |
+| **Homework** | Status filtrlari (Berilgan/Topshirilgan/Kechikkan/Tekshirilgan) + sonlari, detal sahifa, topshirish oynasi (matn + fayl tanlash simulyatsiyasi), **AI yordamchi** (5.3-band) |
 | **Grades** | Umumiy progress (davomat %, uy vazifasi %, testlar %), fanlar bo'yicha o'rtacha, barcha baholar |
 | **Arena** | XP, reyting jadvali (o'z qatori gradient bilan ajratilgan), o'qituvchi yuklagan topshiriqlarni **bajarish**, XP tarixi |
 | **Notifications** | Turlari bo'yicha ikonka/rang, o'qilgan/o'qilmagan, "hammasini o'qildi" |
@@ -277,6 +282,100 @@ Ota-ona **Sanjar Tursunov** (`+998 33 123 45 67`), ikkita farzand:
   o'tgan oyda 400 000 so'm **kechikkan**.
 
 Dizayn butunlay mavjud `app_theme.dart` dan: yangi rang yoki shrift
+qo'shilmagan.
+
+---
+
+## 5.3. AI Yordamchi (Vazifalar bo'limida)
+
+AI yordamchi **faqat uy vazifasi kontekstida** ishlaydi. Global tugma yoki FAB
+YO'Q: yagona kirish nuqtasi — vazifa tafsiloti sahifasining pastidagi ikkinchi
+darajali tugma **"🤖 AI'dan yordam so'rash"** (asosiy "Topshirish" tugmasidan
+keyin turadi, kontur uslubida). Home, Schedule, Arena va Profile ekranlarida
+AI'ga **hech qanday havola yo'q**.
+
+| Qadam | Nima bo'ladi |
+|---|---|
+| Tugma bosiladi | `AiChatScreen` ochiladi — `homeworkId` va vazifa nomi bilan |
+| Ekran ochiladi | Boshlang'ich AI xabari avtomatik keladi: "Salom! '{vazifa nomi}' bo'yicha yordam kerakmi? Qaysi qismida qiynalayapsan?" |
+| Sarlavha ostida | "📎 {vazifa nomi} bo'yicha" chipi — u **olib tashlanmaydi**, suhbat doim shu vazifaga bog'liq |
+| Xabar yuboriladi | O'quvchi xabari darrov o'ngda (gradient fon) chiqadi, AI "yozayapti" (uch nuqtali animatsiya) holatiga o'tadi |
+| Javob keladi | Chapda, och fonda, AI ikonkasi bilan |
+
+Har bir vazifa uchun **alohida suhbat** saqlanadi (`aiChatProvider` family,
+kalit — vazifa), shuning uchun chatga qayta kirilganda yozishmalar joyida
+qoladi.
+
+### Tutor xulqi
+
+AI **hech qachon tayyor javob bermaydi** — savol beradi yoki keyingi qadamni
+ko'rsatadi. Ohang iliq va rag'batlantiruvchi, javob qisqa (2-3 gap).
+Bu qoidalar fake javoblarda ham amal qiladi va `ai_assistant_test.dart` da
+tekshiriladi (har bir javobda savol belgisi bor va uzunligi cheklangan).
+
+### Fake javob mantiqi
+
+`FakeAiAssistantDatasource` ichida, uch qoida:
+
+1. **Tayyor javob so'ralsa → rad javobi.** "javobini ayt", "yechimini yoz",
+   "qilib ber", "to'g'ridan-to'g'ri ayt" kabi **iboralar** qidiriladi va AI
+   javob beradi: *"Men senga to'g'ridan-to'g'ri javob berolmayman, lekin birga
+   qadam-baqadam ko'rib chiqamiz. Birinchi qadam nima deb o'ylaysan?"*
+   Tekshiruv ataylab ibora bo'yicha, faqat "javob" so'zi bo'yicha emas —
+   "Javobim to'g'rimi?" bu haqiqiy savol va u rad etilmaydi.
+2. **Aks holda** — 5 ta tutor uslubidagi javobdan tasodifiy bittasi
+   ("Avval shu masalani qanday tushunganingni ayt-chi?", "Qaysi qismi eng qiyin
+   tuyulyapti?" va h.k.).
+3. **Boshlang'ich xabar** — har doim vazifa nomi bilan (yuqoridagi jadval).
+
+So'rov mavjud `ApiClient` orqali "yuboriladi" (token va `X-Device-Id`
+header'lari yig'iladi va log qilinadi), so'ng 800ms–1.5s "o'ylash" kechikishi
+simulyatsiya qilinadi — shu paytda typing indikatori ko'rinadi.
+
+### Real Gemini API'ga o'tish
+
+`core/service_locator.dart` da **ALMASHTIRISH NUQTASI 4** bor:
+
+```dart
+final Provider<AiAssistantDatasource> aiAssistantDatasourceProvider =
+    Provider<AiAssistantDatasource>((ref) {
+  final ApiClient api = ref.watch(apiClientProvider);
+  if (kUseFakeData) return FakeAiAssistantDatasource(api);
+  // return RealAiAssistantDatasource(api);   // ← shu yerga qo'shiladi
+});
+```
+
+Kerak bo'ladigan ish faqat shu:
+
+1. `data/datasources/real_ai_assistant_datasource.dart` yozish —
+   `AiAssistantDatasource` interfeysining 2 ta metodi (`openingMessage`,
+   `sendMessage`);
+2. Gemini kaliti `--dart-define=GEMINI_API_KEY=...` orqali berilsin
+   (kalit kodga **yozilmaydi**);
+3. system prompt'ga tutor qoidalari kiritilsin: tayyor javob berilmaydi, faqat
+   savol/yo'nalish, javob qisqa va rag'batlantiruvchi;
+4. `homeworkId` bo'yicha vazifa matni (sarlavha + tavsif) kontekst sifatida
+   qo'shilsin.
+
+`AIMessageModel` formati (`role` + `content`) Gemini'ning `contents` massiviga
+to'g'ridan-to'g'ri mos keladi, `conversationHistory` esa allaqachon uzatilyapti.
+**Model, repository, provider va chat ekrani o'zgarmaydi.**
+
+### AI qismining fayllari
+
+```
+data/models/          ai_message_model.dart, ai_conversation_model.dart
+data/datasources/     ai_assistant_datasource.dart (ABSTRACT)
+                      fake_ai_assistant_datasource.dart
+data/repositories/    ai_assistant_repository.dart
+presentation/providers/
+                      ai_assistant_provider.dart   (family: har vazifa — o'z suhbati)
+presentation/screens/homework/
+                      ai_chat_screen.dart
+presentation/widgets/ chat_bubble.dart, typing_indicator.dart
+```
+
+Dizayn butunlay mavjud `app_theme.dart` dan — yangi rang, shrift yoki paket
 qo'shilmagan.
 
 ---
