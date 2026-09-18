@@ -1,0 +1,39 @@
+name: acadium_student
+description: "Acadium — o'quvchilar (student) uchun mobil ilova."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Token / device_id ni xavfsiz saqlash
+  flutter_secure_storage: ^9.2.2
+
+  # Shriftlar (Poppins / Inter)
+  google_fonts: ^6.2.1
+
+  # device_id generatsiya qilish uchun
+  uuid: ^4.5.1
+
+  # Sana / vaqt formatlash
+  intl: ">=0.18.0 <0.21.0"
+
+  # Skeleton loading effekti
+  shimmer: ^3.0.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
