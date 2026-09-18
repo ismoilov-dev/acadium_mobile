@@ -5,7 +5,8 @@ import '../../core/theme/app_theme.dart';
 /// Pastki navigatsiya tablari.
 enum AppTab {
   home(Icons.home_rounded, Icons.home_outlined, 'Bosh sahifa'),
-  schedule(Icons.calendar_month_rounded, Icons.calendar_month_outlined, 'Jadval'),
+  schedule(
+      Icons.calendar_month_rounded, Icons.calendar_month_outlined, 'Jadval'),
   homework(Icons.assignment_rounded, Icons.assignment_outlined, 'Vazifa'),
   arena(Icons.emoji_events_rounded, Icons.emoji_events_outlined, 'Arena'),
   profile(Icons.person_rounded, Icons.person_outline_rounded, 'Profil');

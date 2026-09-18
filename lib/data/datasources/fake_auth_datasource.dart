@@ -132,7 +132,8 @@ class FakeAuthDatasource implements AuthDatasource {
   /// "+998 90 123 45 67" → "+998901234567"
   String _normalize(String phone) {
     final String digits = phone.replaceAll(RegExp(r'\D'), '');
-    final String local = digits.startsWith('998') ? digits.substring(3) : digits;
+    final String local =
+        digits.startsWith('998') ? digits.substring(3) : digits;
     return '${AppConstants.phonePrefix}$local';
   }
 
@@ -148,7 +149,8 @@ class FakeAuthDatasource implements AuthDatasource {
   void _validatePin(String pin) {
     if (pin.length != AppConstants.pinLength ||
         !RegExp(r'^\d+$').hasMatch(pin)) {
-      throw const ValidationException('PIN 4 ta raqamdan iborat bo\'lishi kerak.');
+      throw const ValidationException(
+          'PIN 4 ta raqamdan iborat bo\'lishi kerak.');
     }
   }
 }

@@ -10,7 +10,8 @@ class SecureStorageService {
       : _storage = storage ??
             const FlutterSecureStorage(
               aOptions: AndroidOptions(encryptedSharedPreferences: true),
-              iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+              iOptions:
+                  IOSOptions(accessibility: KeychainAccessibility.first_unlock),
             ),
         _uuid = uuid ?? const Uuid();
 
@@ -31,7 +32,8 @@ class SecureStorageService {
   }) async {
     await _storage.write(key: AppConstants.keyAccessToken, value: accessToken);
     if (refreshToken != null) {
-      await _storage.write(key: AppConstants.keyRefreshToken, value: refreshToken);
+      await _storage.write(
+          key: AppConstants.keyRefreshToken, value: refreshToken);
     }
   }
 
@@ -49,14 +51,16 @@ class SecureStorageService {
     return deviceId;
   }
 
-  Future<String?> readDeviceId() => _storage.read(key: AppConstants.keyDeviceId);
+  Future<String?> readDeviceId() =>
+      _storage.read(key: AppConstants.keyDeviceId);
 
   // --------------------------------------------------------------- sessiya
 
   Future<void> saveStudentId(String studentId) =>
       _storage.write(key: AppConstants.keyStudentId, value: studentId);
 
-  Future<String?> readStudentId() => _storage.read(key: AppConstants.keyStudentId);
+  Future<String?> readStudentId() =>
+      _storage.read(key: AppConstants.keyStudentId);
 
   Future<void> savePhone(String phone) =>
       _storage.write(key: AppConstants.keyPhone, value: phone);

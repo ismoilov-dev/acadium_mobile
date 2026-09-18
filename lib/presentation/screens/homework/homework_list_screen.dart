@@ -102,8 +102,7 @@ class _FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int total =
-        counts.values.fold<int>(0, (int acc, int v) => acc + v);
+    final int total = counts.values.fold<int>(0, (int acc, int v) => acc + v);
 
     return SizedBox(
       height: 58,
@@ -178,8 +177,7 @@ class _Chip extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.onPrimary.withValues(alpha: 0.22)
@@ -251,9 +249,7 @@ class HomeworkTile extends StatelessWidget {
           Row(
             children: <Widget>[
               Icon(
-                overdue
-                    ? Icons.error_outline_rounded
-                    : Icons.schedule_rounded,
+                overdue ? Icons.error_outline_rounded : Icons.schedule_rounded,
                 size: 14,
                 color: overdue ? AppColors.danger : AppColors.textTertiary,
               ),

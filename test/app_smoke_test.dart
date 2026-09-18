@@ -1,4 +1,7 @@
+import 'package:acadium_student/data/datasources/mock/mock_data.dart';
+import 'package:acadium_student/data/datasources/mock/mock_state.dart';
 import 'package:acadium_student/main.dart';
+import 'package:acadium_student/presentation/screens/arena/arena_task_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,6 +62,8 @@ void main() {
   setUp(() {
     store = <String, String>{};
     _mockSecureStorage(store);
+    // Fake "baza"ni boshlang'ich holatga qaytaramiz.
+    MockState.instance.reset();
   });
 
   testWidgets('Splash → Phone login → PIN → Home oqimi ishlaydi',
@@ -130,6 +135,54 @@ void main() {
 
     expect(find.text('Jami XP'), findsOneWidget);
     expect(find.text('Xush kelibsiz!'), findsNothing);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('Arena testini yechib XP olinadi', (WidgetTester tester) async {
+    _usePhoneScreen(tester);
+    const String quizId = 'a1000001-0000-4000-8000-000000000001';
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: ArenaTaskScreen(taskId: quizId)),
+      ),
+    );
+    await _settle(tester);
+
+    expect(find.text('Grammar sprint: Present Perfect'), findsOneWidget);
+    expect(find.text('Dilnoza Karimova · Ingliz tili'), findsOneWidget);
+
+    // Testni boshlaymiz.
+    await tester.tap(find.text('Testni boshlash'));
+    await tester.pump();
+
+    // Har bir savolga to'g'ri javob beramiz.
+    final List<dynamic> questions = MockData.arenaTasks().firstWhere(
+            (Map<String, dynamic> t) => t['id'] == quizId)['questions']
+        as List<dynamic>;
+
+    for (int i = 0; i < questions.length; i++) {
+      final Map<String, dynamic> q = questions[i] as Map<String, dynamic>;
+      final List<String> options =
+          (q['options'] as List<dynamic>).cast<String>();
+      final int correct = MockData.quizAnswerKey[q['id']]!;
+
+      expect(find.text('Savol ${i + 1} / ${questions.length}'), findsOneWidget);
+      await tester.tap(find.text(options[correct]));
+      await tester.pump();
+      await tester.tap(
+        find.text(i == questions.length - 1 ? 'Yakunlash' : 'Keyingi savol'),
+      );
+      await tester.pump();
+    }
+
+    await _settle(tester, frames: 12);
+
+    // Natija: 5/5 to'g'ri → to'liq 120 XP, jami 1360 XP.
+    expect(find.text('+120'), findsOneWidget);
+    expect(find.text("5 / 5 to'g'ri javob"), findsOneWidget);
+    expect(find.text('1 360'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox.shrink());
   });

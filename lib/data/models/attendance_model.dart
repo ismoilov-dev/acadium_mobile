@@ -37,7 +37,8 @@ class AttendanceModel {
   bool get countsAsAttended =>
       status == AttendanceStatus.present || status == AttendanceStatus.late;
 
-  factory AttendanceModel.fromJson(Map<String, dynamic> json) => AttendanceModel(
+  factory AttendanceModel.fromJson(Map<String, dynamic> json) =>
+      AttendanceModel(
         id: json['id'] as String,
         lessonId: json['lesson_id'] as String,
         subject: json['subject'] as String,

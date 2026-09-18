@@ -43,8 +43,8 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
     if (!mounted) return;
 
     if (ok) {
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(AppRoutes.shell, (Route<dynamic> r) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutes.shell, (Route<dynamic> r) => false);
     } else {
       setState(() => _pin = '');
     }

@@ -10,7 +10,8 @@ enum HomeworkStatus {
   final String apiValue;
   final String label;
 
-  static HomeworkStatus fromApi(String value) => HomeworkStatus.values.firstWhere(
+  static HomeworkStatus fromApi(String value) =>
+      HomeworkStatus.values.firstWhere(
         (HomeworkStatus s) => s.apiValue == value,
         orElse: () => HomeworkStatus.assigned,
       );

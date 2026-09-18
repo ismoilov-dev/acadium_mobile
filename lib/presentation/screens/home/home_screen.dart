@@ -230,8 +230,8 @@ class _NextLessonSection extends ConsumerWidget {
           onAction: () => ref.read(shellTabProvider.notifier).state = 1,
         ),
         lesson.when(
-          loading: () =>
-              const AppShimmer(child: ShimmerBox(height: 120, radius: AppRadius.lg)),
+          loading: () => const AppShimmer(
+              child: ShimmerBox(height: 120, radius: AppRadius.lg)),
           error: (Object e, _) => AppCard(
             child: ErrorView(
               error: e,

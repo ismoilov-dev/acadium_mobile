@@ -15,7 +15,8 @@ class PhoneCheckResult {
   /// "A***v" ko'rinishidagi ism (ixtiyoriy, PIN ekranida ko'rsatish uchun).
   final String? maskedName;
 
-  factory PhoneCheckResult.fromJson(Map<String, dynamic> json) => PhoneCheckResult(
+  factory PhoneCheckResult.fromJson(Map<String, dynamic> json) =>
+      PhoneCheckResult(
         phone: json['phone'] as String,
         isRegistered: json['registered'] as bool,
         maskedName: json['masked_name'] as String?,

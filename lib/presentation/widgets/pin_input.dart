@@ -58,10 +58,18 @@ class PinKeypad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const List<String> keys = <String>[
-      '1', '2', '3',
-      '4', '5', '6',
-      '7', '8', '9',
-      '', '0', 'back',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '',
+      '0',
+      'back',
     ];
 
     return GridView.count(

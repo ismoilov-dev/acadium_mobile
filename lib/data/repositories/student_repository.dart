@@ -31,7 +31,8 @@ class StudentRepository {
     final List<LessonModel> upcoming = lessons
         .where((LessonModel l) => l.endsAt.isAfter(now))
         .toList()
-      ..sort((LessonModel a, LessonModel b) => a.startsAt.compareTo(b.startsAt));
+      ..sort(
+          (LessonModel a, LessonModel b) => a.startsAt.compareTo(b.startsAt));
     return upcoming.isEmpty ? null : upcoming.first;
   }
 
@@ -44,7 +45,8 @@ class StudentRepository {
       grouped.putIfAbsent(lesson.weekday, () => <LessonModel>[]).add(lesson);
     }
     for (final List<LessonModel> day in grouped.values) {
-      day.sort((LessonModel a, LessonModel b) => a.startsAt.compareTo(b.startsAt));
+      day.sort(
+          (LessonModel a, LessonModel b) => a.startsAt.compareTo(b.startsAt));
     }
     return grouped;
   }
@@ -85,16 +87,12 @@ class StudentRepository {
 
     final double attendancePercent = attendance.isEmpty
         ? 0
-        : attendance
-                .where((AttendanceModel a) => a.countsAsAttended)
-                .length /
+        : attendance.where((AttendanceModel a) => a.countsAsAttended).length /
             attendance.length;
 
     final double homeworkPercent = homework.isEmpty
         ? 0
-        : homework
-                .where((HomeworkModel h) => !h.isPending)
-                .length /
+        : homework.where((HomeworkModel h) => !h.isPending).length /
             homework.length;
 
     final List<GradeModel> tests = grades
@@ -124,6 +122,47 @@ class StudentRepository {
 
   Future<List<ArenaTaskModel>> getArenaTasks(String studentId) =>
       _datasource.getArenaTasks(studentId);
+
+  /// Faol (bajarilmagan) topshiriqlar — muddati yaqini birinchi.
+  Future<List<ArenaTaskModel>> getActiveArenaTasks(String studentId) async {
+    final List<ArenaTaskModel> tasks = await getArenaTasks(studentId);
+    final List<ArenaTaskModel> active =
+        tasks.where((ArenaTaskModel t) => !t.isCompleted).toList();
+
+    active.sort((ArenaTaskModel a, ArenaTaskModel b) {
+      // Mukofot olishga tayyor chellenjlar tepada tursin.
+      if (a.canClaim != b.canClaim) return a.canClaim ? -1 : 1;
+      final DateTime aDeadline =
+          a.deadline ?? DateTime.now().add(const Duration(days: 365));
+      final DateTime bDeadline =
+          b.deadline ?? DateTime.now().add(const Duration(days: 365));
+      return aDeadline.compareTo(bDeadline);
+    });
+    return active;
+  }
+
+  Future<ArenaTaskModel> getArenaTask(String taskId) =>
+      _datasource.getArenaTask(taskId);
+
+  Future<ArenaTaskResult> submitArenaQuiz({
+    required String taskId,
+    required Map<String, int> answers,
+  }) =>
+      _datasource.submitArenaQuiz(taskId: taskId, answers: answers);
+
+  Future<ArenaTaskResult> submitArenaWork({
+    required String taskId,
+    required String text,
+    List<String> fileNames = const <String>[],
+  }) =>
+      _datasource.submitArenaWork(
+        taskId: taskId,
+        text: text,
+        fileNames: fileNames,
+      );
+
+  Future<ArenaTaskResult> claimArenaReward(String taskId) =>
+      _datasource.claimArenaReward(taskId);
 
   Future<List<NotificationModel>> getNotifications(String studentId) =>
       _datasource.getNotifications(studentId);

@@ -37,13 +37,14 @@ Minimal talab: **Flutter 3.27+** (`Color.withValues` ishlatilgan).
 
 ```
 flutter analyze   → No issues found!
-flutter test      → 13/13 test passed
+flutter test      → 24/24 test passed
 flutter build web → ✓ Built build/web
 ```
 
 Testlar: `test/mock_data_test.dart` (mock JSON → model, fake datasource,
-repository progress) va `test/app_smoke_test.dart` (splash → telefon →
-noto'g'ri PIN → 1234 → Home → Arena → Profil oqimi to'liq).
+arena XP mantiqi, repository progress) va `test/app_smoke_test.dart`
+(splash → telefon → noto'g'ri PIN → 1234 → Home → Arena → Profil oqimi, hamda
+arena testini to'liq yechib +120 XP olish).
 
 > Agar loyihani boshqa kompyuterga ko'chirsangiz va native papkalar yo'q bo'lsa,
 > `./setup.sh` ularni qayta yaratadi (lib/ va pubspec.yaml ga tegmaydi).
@@ -155,12 +156,44 @@ headers={Content-Type: application/json, X-Device-Id: <uuid>,
 | **Schedule** | Haftalik jadval, kunlar bo'yicha gorizontal tanlash, dars kartalari |
 | **Homework** | Status filtrlari (Berilgan/Topshirilgan/Kechikkan/Tekshirilgan) + sonlari, detal sahifa, topshirish oynasi (matn + fayl tanlash simulyatsiyasi) |
 | **Grades** | Umumiy progress (davomat %, uy vazifasi %, testlar %), fanlar bo'yicha o'rtacha, barcha baholar |
-| **Arena** | XP, reyting jadvali (o'z qatori gradient bilan ajratilgan), topshiriqlar, XP tarixi |
+| **Arena** | XP, reyting jadvali (o'z qatori gradient bilan ajratilgan), o'qituvchi yuklagan topshiriqlarni **bajarish**, XP tarixi |
 | **Notifications** | Turlari bo'yicha ikonka/rang, o'qilgan/o'qilmagan, "hammasini o'qildi" |
 | **Profile** | Ism, telefon, guruh, filial, device_id, chiqish (token tozalanadi) |
 
 Har bir ekranda **loading (shimmer)**, **error (qayta urinish tugmasi bilan)**
 va **empty state** bor. Ro'yxatlarda pull-to-refresh ishlaydi.
+
+---
+
+## 5.1. Arena — topshiriqlarni bajarish
+
+O'qituvchi topshiriq yuklaydi → o'quvchi ro'yxatda ko'radi → bajaradi → **XP
+avtomatik yig'iladi**. Uch xil topshiriq turi bor:
+
+| Tur | Qanday bajariladi | XP qanday hisoblanadi |
+|---|---|---|
+| **Test** (`quiz`) | Savollarga birma-bir javob beriladi (A/B/C/D) | To'g'ri javoblar ulushi × mukofot. Masalan 5 tadan 3 tasi → 120 × 3/5 = 72 XP |
+| **Topshiriq** (`submission`) | Matn yoziladi va/yoki fayl biriktiriladi | To'liq mukofot |
+| **Chellenj** (`challenge`) | Avtomatik to'planadi (davomat, vazifalar). To'lgach "Mukofotni olish" tugmasi paydo bo'ladi | To'liq mukofot |
+
+**To'g'ri javoblar mijozga yuborilmaydi.** `ArenaQuestion` modelida javob kaliti
+yo'q — javoblar `POST /arena-tasks/{id}/submit/` orqali yuboriladi va "server"
+tomonida tekshiriladi (fake rejimda `MockData.quizAnswerKey` datasource ichida).
+Real API'ga o'tganda bu mantiq o'zgarmaydi.
+
+Topshiriq yakunlangach bir vaqtning o'zida:
+
+1. jami XP oshadi (Home, Profil, Arena — hammasida);
+2. XP tarixiga yozuv qo'shiladi;
+3. reyting qayta hisoblanadi va o'rin o'zgarsa natija ekranida
+   "2-o'rindan 1-o'ringa ko'tarildingiz 🎉" deb ko'rsatiladi;
+4. "+XP" bildirishnomasi yaratiladi.
+
+Demo ma'lumotda 420 XP lik topshiriq bor — hammasini bajarsangiz 1240 → 1660 XP
+bo'lib, reytingda Madinani (1480) ortda qoldirasiz.
+
+O'zgaruvchan holat `data/datasources/mock/mock_state.dart` ichida — bu "fake
+server bazasi". Real API'ga o'tilganda bu fayl kerak bo'lmaydi.
 
 ---
 

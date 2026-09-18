@@ -30,8 +30,7 @@ import 'storage/secure_storage_service.dart';
 
 /// Fake rejim yoqilganmi?
 /// Terminaldan boshqarish: `flutter run --dart-define=USE_FAKE=false`
-const bool kUseFakeData =
-    bool.fromEnvironment('USE_FAKE', defaultValue: true);
+const bool kUseFakeData = bool.fromEnvironment('USE_FAKE', defaultValue: true);
 
 // ----------------------------------------------------------------- Infratuzilma
 

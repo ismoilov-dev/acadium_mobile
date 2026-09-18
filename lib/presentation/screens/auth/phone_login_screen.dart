@@ -165,7 +165,8 @@ class _FakeModeHint extends StatelessWidget {
               'Demo rejim: raqam JUFT bilan tugasa — PIN o\'rnatish, '
               'TOQ bilan tugasa — PIN kiritish oynasi ochiladi. '
               'Mavjud foydalanuvchi uchun PIN: 1234',
-              style: AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
+              style:
+                  AppTextStyles.caption.copyWith(color: AppColors.textPrimary),
             ),
           ),
         ],

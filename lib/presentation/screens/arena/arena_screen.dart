@@ -8,9 +8,11 @@ import '../../../data/models/xp_model.dart';
 import '../../providers/arena_provider.dart';
 import '../../providers/student_provider.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/arena_task_card.dart';
 import '../../widgets/loading_shimmer.dart';
 import '../../widgets/stat_card.dart';
 import '../../widgets/state_views.dart';
+import 'arena_task_screen.dart';
 
 /// Arena: XP, reyting jadvali va topshiriqlar.
 class ArenaScreen extends ConsumerWidget {
@@ -176,7 +178,8 @@ class _LeaderboardTile extends StatelessWidget {
                     '${entry.rank}',
                     style: AppTextStyles.h3.copyWith(
                       fontSize: 15,
-                      color: isMe ? AppColors.onPrimary : AppColors.textTertiary,
+                      color:
+                          isMe ? AppColors.onPrimary : AppColors.textTertiary,
                     ),
                   ),
           ),
@@ -245,25 +248,45 @@ class _LeaderboardTile extends StatelessWidget {
   }
 }
 
-/// XP yig'ish topshiriqlari.
+/// O'qituvchilar yuklagan topshiriqlar: faol va bajarilgan.
 class _ArenaTasks extends ConsumerWidget {
   const _ArenaTasks();
 
+  /// Topshiriqni ochish va yopilgach detal provider'ini yangilash.
+  Future<void> _open(BuildContext context, WidgetRef ref, String taskId) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ArenaTaskScreen(taskId: taskId),
+      ),
+    );
+    ref.invalidate(arenaTaskProvider(taskId));
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<List<ArenaTaskModel>> tasks = ref.watch(arenaTasksProvider);
+    final AsyncValue<List<ArenaTaskModel>> active =
+        ref.watch(activeArenaTasksProvider);
+    final AsyncValue<List<ArenaTaskModel>> completed =
+        ref.watch(completedArenaTasksProvider);
+    final List<ArenaTaskModel> done =
+        completed.valueOrNull ?? <ArenaTaskModel>[];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const SectionHeader(title: 'Topshiriqlar'),
-        tasks.when(
+        SectionHeader(
+          title: 'Topshiriqlar',
+          actionLabel: active.valueOrNull == null
+              ? null
+              : '${active.valueOrNull!.length} ta faol',
+        ),
+        active.when(
           loading: () => const AppShimmer(
             child: Column(
               children: <Widget>[
-                ShimmerCard(height: 96),
+                ShimmerCard(height: 112),
                 SizedBox(height: AppSpacing.md),
-                ShimmerCard(height: 96),
+                ShimmerCard(height: 112),
               ],
             ),
           ),
@@ -278,129 +301,39 @@ class _ArenaTasks extends ConsumerWidget {
               ? const AppCard(
                   child: EmptyView(
                     icon: Icons.flag_outlined,
-                    title: 'Topshiriq yo\'q',
-                    message: 'Yangi topshiriqlar tez orada qo\'shiladi.',
+                    title: "Faol topshiriq yo'q",
+                    message: "Hammasini bajardingiz! O'qituvchi yangi "
+                        "topshiriq yuklaganda shu yerda paydo bo'ladi.",
                   ),
                 )
               : Column(
                   children: <Widget>[
                     for (final ArenaTaskModel t in items) ...<Widget>[
-                      _ArenaTaskCard(task: t),
+                      ArenaTaskCard(
+                        task: t,
+                        onTap: () => _open(context, ref, t.id),
+                      ),
                       const SizedBox(height: AppSpacing.md),
                     ],
                   ],
                 ),
         ),
-      ],
-    );
-  }
-}
-
-/// Bitta arena topshirig'i kartasi.
-class _ArenaTaskCard extends StatelessWidget {
-  const _ArenaTaskCard({required this.task});
-
-  final ArenaTaskModel task;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool done = task.status == ArenaTaskStatus.completed;
-
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                width: 40,
-                height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: done
-                      ? AppColors.successLight
-                      : AppColors.secondary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
-                child: Icon(
-                  done ? Icons.check_rounded : Icons.bolt_rounded,
-                  color: done ? AppColors.success : AppColors.secondary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      task.title,
-                      style: AppTextStyles.h3.copyWith(fontSize: 15),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      task.description,
-                      style: AppTextStyles.caption,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                '+${task.xpReward}',
-                style: AppTextStyles.h3.copyWith(
-                  fontSize: 15,
-                  color: AppColors.secondary,
-                ),
-              ),
-            ],
-          ),
+        if (done.isNotEmpty) ...<Widget>[
           const SizedBox(height: AppSpacing.lg),
-          Row(
+          const SectionHeader(title: 'Bajarilgan'),
+          Column(
             children: <Widget>[
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                  child: LinearProgressIndicator(
-                    value: task.progress,
-                    minHeight: 6,
-                    backgroundColor: AppColors.border,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      done ? AppColors.success : AppColors.secondary,
-                    ),
-                  ),
+              for (final ArenaTaskModel t in done) ...<Widget>[
+                ArenaTaskCard(
+                  task: t,
+                  onTap: () => _open(context, ref, t.id),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Text(
-                '${task.progressCurrent}/${task.progressTarget}',
-                style: AppTextStyles.caption.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+                const SizedBox(height: AppSpacing.md),
+              ],
             ],
           ),
-          if (task.deadline != null) ...<Widget>[
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: <Widget>[
-                const Icon(
-                  Icons.schedule_rounded,
-                  size: 13,
-                  color: AppColors.textTertiary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Tugaydi: ${Formatters.dayMonthTime(task.deadline!)}',
-                  style: AppTextStyles.caption,
-                ),
-              ],
-            ),
-          ],
         ],
-      ),
+      ],
     );
   }
 }
@@ -485,7 +418,9 @@ class _XpLogRow extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              positive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+              positive
+                  ? Icons.arrow_upward_rounded
+                  : Icons.arrow_downward_rounded,
               size: 16,
               color: positive ? AppColors.success : AppColors.danger,
             ),

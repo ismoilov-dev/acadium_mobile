@@ -78,7 +78,8 @@ class LeaderboardEntry {
     return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
-  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
+  factory LeaderboardEntry.fromJson(Map<String, dynamic> json) =>
+      LeaderboardEntry(
         studentId: json['student_id'] as String,
         fullName: json['full_name'] as String,
         totalXp: json['total_xp'] as int,

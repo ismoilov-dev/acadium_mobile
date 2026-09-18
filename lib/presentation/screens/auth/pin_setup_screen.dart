@@ -24,8 +24,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   String _secondPin = '';
   String? _error;
 
-  String get _current =>
-      _stage == _SetupStage.create ? _firstPin : _secondPin;
+  String get _current => _stage == _SetupStage.create ? _firstPin : _secondPin;
 
   void _onDigit(String digit) {
     if (_current.length >= AppConstants.pinLength) return;
@@ -80,8 +79,8 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     if (!mounted) return;
 
     if (ok) {
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(AppRoutes.shell, (Route<dynamic> r) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          AppRoutes.shell, (Route<dynamic> r) => false);
     } else {
       setState(() {
         _stage = _SetupStage.create;

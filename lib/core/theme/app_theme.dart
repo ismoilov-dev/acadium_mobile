@@ -165,7 +165,8 @@ class AppTextStyles {
         color: AppColors.textPrimary,
       );
 
-  static TextStyle get bodyMuted => body.copyWith(color: AppColors.textSecondary);
+  static TextStyle get bodyMuted =>
+      body.copyWith(color: AppColors.textSecondary);
 
   static TextStyle get caption => GoogleFonts.poppins(
         fontSize: 12,
@@ -280,14 +281,16 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.textPrimary,
-        contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.onPrimary),
+        contentTextStyle:
+            AppTextStyles.body.copyWith(color: AppColors.onPrimary),
         shape: RoundedRectangleBorder(borderRadius: AppRadius.button),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.surface,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+          borderRadius:
+              BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
         ),
       ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(

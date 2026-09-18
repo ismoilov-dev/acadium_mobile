@@ -5,17 +5,38 @@ class Formatters {
   const Formatters._();
 
   static const List<String> _months = <String>[
-    'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
-    'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr',
+    'yanvar',
+    'fevral',
+    'mart',
+    'aprel',
+    'may',
+    'iyun',
+    'iyul',
+    'avgust',
+    'sentabr',
+    'oktabr',
+    'noyabr',
+    'dekabr',
   ];
 
   static const List<String> weekdaysShort = <String>[
-    'Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya',
+    'Du',
+    'Se',
+    'Ch',
+    'Pa',
+    'Ju',
+    'Sh',
+    'Ya',
   ];
 
   static const List<String> weekdaysFull = <String>[
-    'Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba',
-    'Juma', 'Shanba', 'Yakshanba',
+    'Dushanba',
+    'Seshanba',
+    'Chorshanba',
+    'Payshanba',
+    'Juma',
+    'Shanba',
+    'Yakshanba',
   ];
 
   /// 14:30
@@ -88,18 +109,18 @@ class Formatters {
   /// +998 90 123 45 67
   static String phone(String raw) {
     final String digits = raw.replaceAll(RegExp(r'\D'), '');
-    final String local = digits.startsWith('998') ? digits.substring(3) : digits;
+    final String local =
+        digits.startsWith('998') ? digits.substring(3) : digits;
     if (local.length != 9) return raw;
     return '+998 ${local.substring(0, 2)} ${local.substring(2, 5)} '
         '${local.substring(5, 7)} ${local.substring(7)}';
   }
 
   /// 1240 -> "1 240"
-  static String number(int value) =>
-      value.toString().replaceAllMapped(
-            RegExp(r'(\d)(?=(\d{3})+$)'),
-            (Match m) => '${m[1]} ',
-          );
+  static String number(int value) => value.toString().replaceAllMapped(
+        RegExp(r'(\d)(?=(\d{3})+$)'),
+        (Match m) => '${m[1]} ',
+      );
 
   static DateTime _dateOnly(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
 }

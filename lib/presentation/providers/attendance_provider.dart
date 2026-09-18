@@ -11,7 +11,8 @@ final FutureProvider<List<AttendanceModel>> attendanceProvider =
   final StudentRepository repo = ref.watch(studentRepositoryProvider);
   final String studentId = requireStudentId(ref);
   final List<AttendanceModel> items = await repo.getAttendance(studentId);
-  items.sort((AttendanceModel a, AttendanceModel b) => b.date.compareTo(a.date));
+  items
+      .sort((AttendanceModel a, AttendanceModel b) => b.date.compareTo(a.date));
   return items;
 });
 

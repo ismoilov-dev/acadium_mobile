@@ -22,7 +22,8 @@ class MockData {
   }
 
   /// Joriy haftaning dushanbasi (00:00).
-  static DateTime get _weekStart => _today.subtract(Duration(days: _today.weekday - 1));
+  static DateTime get _weekStart =>
+      _today.subtract(Duration(days: _today.weekday - 1));
 
   /// Joriy haftaning [weekday] kunidagi [hour]:[minute] vaqti.
   /// weekday: 1 = Dushanba ... 7 = Yakshanba
@@ -146,16 +147,33 @@ class MockData {
     ];
     // Oxirgi 20 ta dars: 17 ta keldi, 2 ta kechikdi, 1 ta sababli.
     const List<String> statuses = <String>[
-      'present', 'present', 'late', 'present', 'present',
-      'present', 'present', 'present', 'excused', 'present',
-      'present', 'late', 'present', 'present', 'present',
-      'present', 'present', 'present', 'present', 'present',
+      'present',
+      'present',
+      'late',
+      'present',
+      'present',
+      'present',
+      'present',
+      'present',
+      'excused',
+      'present',
+      'present',
+      'late',
+      'present',
+      'present',
+      'present',
+      'present',
+      'present',
+      'present',
+      'present',
+      'present',
     ];
 
     return List<Map<String, dynamic>>.generate(statuses.length, (int i) {
       final DateTime date = _today.subtract(Duration(days: (i + 1) * 2));
       return <String, dynamic>{
-        'id': 'bb0000${i.toString().padLeft(2, '0')}-0000-4000-8000-000000000001',
+        'id':
+            'bb0000${i.toString().padLeft(2, '0')}-0000-4000-8000-000000000001',
         'lesson_id': 'aa000001-0000-4000-8000-00000000000${(i % 8) + 1}',
         'subject': subjects[i % subjects.length],
         'date': _iso(date.add(const Duration(hours: 14))),
@@ -191,9 +209,8 @@ class MockData {
           'id': 'cc000001-0000-4000-8000-000000000002',
           'subject': 'Matematika',
           'title': 'Kvadrat tenglamalar — 12 ta masala',
-          'description':
-              'Darslikning 84-betidagi 1-12 masalalarni yeching. '
-                  'Har bir masalaning yechimi bosqichma-bosqich yozilsin.',
+          'description': 'Darslikning 84-betidagi 1-12 masalalarni yeching. '
+              'Har bir masalaning yechimi bosqichma-bosqich yozilsin.',
           'teacher_name': 'Bekzod Rahimov',
           'assigned_at': _iso(_today.subtract(const Duration(days: 2))),
           'due_at': _iso(_today.add(const Duration(hours: 21))),
@@ -218,7 +235,8 @@ class MockData {
           'max_score': 100,
           'xp_reward': 40,
           'score': null,
-          'submitted_at': _iso(_today.subtract(const Duration(days: 1, hours: 3))),
+          'submitted_at':
+              _iso(_today.subtract(const Duration(days: 1, hours: 3))),
           'teacher_comment': null,
           'attachments': <String>[],
         },
@@ -242,9 +260,8 @@ class MockData {
           'id': 'cc000001-0000-4000-8000-000000000005',
           'subject': 'Kompyuter savodxonligi',
           'title': 'Excel: byudjet jadvali',
-          'description':
-              'Oylik byudjet jadvalini yarating: SUM, AVERAGE va IF '
-                  'formulalaridan foydalaning.',
+          'description': 'Oylik byudjet jadvalini yarating: SUM, AVERAGE va IF '
+              'formulalaridan foydalaning.',
           'teacher_name': 'Sardor Nazarov',
           'assigned_at': _iso(_today.subtract(const Duration(days: 11))),
           'due_at': _iso(_today.subtract(const Duration(days: 9))),
@@ -366,7 +383,8 @@ class MockData {
           'amount': 45,
           'reason': 'Unit 6: Vocabulary quiz topshirildi',
           'source': 'homework',
-          'created_at': _iso(_today.subtract(const Duration(days: 1, hours: 4))),
+          'created_at':
+              _iso(_today.subtract(const Duration(days: 1, hours: 4))),
         },
         <String, dynamic>{
           'id': 'ee000001-0000-4000-8000-000000000002',
@@ -458,48 +476,222 @@ class MockData {
         },
       ];
 
+  /// O'qituvchilar yuklagan arena topshiriqlari.
+  /// `quiz` turidagilarda savollar bor, to'g'ri javoblar esa [quizAnswerKey]
+  /// ichida — xuddi real backend'dagidek, mijozga yuborilmaydi.
   static List<Map<String, dynamic>> arenaTasks() => <Map<String, dynamic>>[
         <String, dynamic>{
           'id': 'a1000001-0000-4000-8000-000000000001',
+          'type': 'quiz',
+          'title': 'Grammar sprint: Present Perfect',
+          'description': '5 ta savol, har biri uchun bitta to\'g\'ri javob. '
+              'To\'g\'ri javoblar soniga qarab XP beriladi.',
+          'teacher_name': 'Dilnoza Karimova',
+          'subject': 'Ingliz tili',
+          'xp_reward': 120,
+          'status': 'available',
+          'progress_current': 0,
+          'progress_target': 5,
+          'created_at': _iso(DateTime.now().subtract(const Duration(hours: 5))),
+          'deadline': _iso(_today.add(const Duration(days: 3, hours: 20))),
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 'q1-0001',
+              'text': 'She ___ in London since 2019.',
+              'options': <String>['lives', 'has lived', 'lived', 'is living'],
+            },
+            <String, dynamic>{
+              'id': 'q1-0002',
+              'text': 'I ___ that film three times.',
+              'options': <String>['have seen', 'saw', 'see', 'had seen'],
+            },
+            <String, dynamic>{
+              'id': 'q1-0003',
+              'text': 'Qaysi gap to\'g\'ri yozilgan?',
+              'options': <String>[
+                'He has went home',
+                'He have gone home',
+                'He has gone home',
+                'He has go home',
+              ],
+            },
+            <String, dynamic>{
+              'id': 'q1-0004',
+              'text': '___ you ever been to Dubai?',
+              'options': <String>['Did', 'Has', 'Are', 'Have'],
+            },
+            <String, dynamic>{
+              'id': 'q1-0005',
+              'text': "We haven't finished ___.",
+              'options': <String>['already', 'ago', 'yet', 'since'],
+            },
+          ],
+        },
+        <String, dynamic>{
+          'id': 'a1000001-0000-4000-8000-000000000002',
+          'type': 'quiz',
+          'title': 'Blitz: kvadrat tenglamalar',
+          'description': '4 ta savol. Kalkulyatorsiz yechishga harakat qiling!',
+          'teacher_name': 'Bekzod Rahimov',
+          'subject': 'Matematika',
+          'xp_reward': 100,
+          'status': 'available',
+          'progress_current': 0,
+          'progress_target': 4,
+          'created_at': _iso(DateTime.now().subtract(const Duration(days: 1))),
+          'deadline': _iso(_today.add(const Duration(days: 5, hours: 20))),
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'id': 'q2-0001',
+              'text': 'x² − 5x + 6 = 0 tenglamaning ildizlari:',
+              'options': <String>['2 va 3', '1 va 6', '−2 va −3', '0 va 5'],
+            },
+            <String, dynamic>{
+              'id': 'q2-0002',
+              'text': 'Diskriminant formulasi:',
+              'options': <String>[
+                'b² + 4ac',
+                'b² − 4ac',
+                '−b / 2a',
+                'a² − 4bc'
+              ],
+            },
+            <String, dynamic>{
+              'id': 'q2-0003',
+              'text': "D < 0 bo'lsa, tenglama nechta haqiqiy ildizga ega?",
+              'options': <String>['2 ta', '1 ta', 'Ildizi yo\'q', 'Cheksiz'],
+            },
+            <String, dynamic>{
+              'id': 'q2-0004',
+              'text': 'x² − 9 = 0 tenglamaning yechimi:',
+              'options': <String>['x = 3', 'x = ±3', 'x = 9', 'x = ±9'],
+            },
+          ],
+        },
+        <String, dynamic>{
+          'id': 'a1000001-0000-4000-8000-000000000003',
+          'type': 'submission',
+          'title': 'Essay challenge: My future career',
+          'description':
+              '150-200 so\'zdan iborat qisqa essay yozing. Kamida 3 ta yangi '
+                  'so\'z va bitta Present Perfect gap ishlatilsin.',
+          'teacher_name': 'Dilnoza Karimova',
+          'subject': 'Ingliz tili',
+          'xp_reward': 150,
+          'status': 'available',
+          'progress_current': 0,
+          'progress_target': 1,
+          'created_at': _iso(DateTime.now().subtract(const Duration(days: 2))),
+          'deadline': _iso(_today.add(const Duration(days: 4, hours: 20))),
+          'attachments': <String>['essay_namuna.pdf'],
+          'questions': <Map<String, dynamic>>[],
+        },
+        <String, dynamic>{
+          'id': 'a1000001-0000-4000-8000-000000000004',
+          'type': 'submission',
+          'title': 'Video: 1 daqiqalik self-introduction',
+          'description':
+              'O\'zingiz haqingizda 1 daqiqalik video yozib yuklang. '
+                  'Ism, yosh, qiziqish va maqsadingiz haqida gapiring.',
+          'teacher_name': 'Madina Yusupova',
+          'subject': 'IELTS Speaking',
+          'xp_reward': 90,
+          'status': 'available',
+          'progress_current': 0,
+          'progress_target': 1,
+          'created_at': _iso(DateTime.now().subtract(const Duration(days: 3))),
+          'deadline': null,
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[],
+        },
+        <String, dynamic>{
+          'id': 'a1000001-0000-4000-8000-000000000005',
+          'type': 'challenge',
           'title': 'Haftalik marafon',
-          'description': 'Bu hafta 5 ta uy vazifasini o\'z vaqtida topshiring.',
+          'description': "Bu hafta 5 ta uy vazifasini o'z vaqtida topshiring.",
+          'teacher_name': 'Acadium',
+          'subject': '',
           'xp_reward': 150,
           'status': 'in_progress',
           'progress_current': 3,
           'progress_target': 5,
+          'created_at': _iso(_weekStart),
           'deadline': _iso(_weekStart.add(const Duration(days: 6, hours: 23))),
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[],
         },
         <String, dynamic>{
-          'id': 'a1000001-0000-4000-8000-000000000002',
+          'id': 'a1000001-0000-4000-8000-000000000006',
+          'type': 'challenge',
           'title': 'Mukammal davomat',
           'description': '10 ta darsga kechikmasdan keling.',
+          'teacher_name': 'Acadium',
+          'subject': '',
           'xp_reward': 120,
           'status': 'in_progress',
           'progress_current': 8,
           'progress_target': 10,
+          'created_at': _iso(_today.subtract(const Duration(days: 20))),
           'deadline': null,
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[],
         },
         <String, dynamic>{
-          'id': 'a1000001-0000-4000-8000-000000000003',
-          'title': 'Test ustasi',
-          'description': 'Ketma-ket 3 ta testda 85+ ball oling.',
-          'xp_reward': 200,
-          'status': 'available',
-          'progress_current': 0,
-          'progress_target': 3,
-          'deadline': null,
-        },
-        <String, dynamic>{
-          'id': 'a1000001-0000-4000-8000-000000000004',
+          'id': 'a1000001-0000-4000-8000-000000000007',
+          'type': 'challenge',
           'title': 'Birinchi qadam',
-          'description': 'Profilingizni to\'ldiring.',
+          'description':
+              "Profilingizni to'ldiring va ilovaga birinchi marta kiring. "
+                  'Mukofot tayyor — uni olib qo\'ying!',
+          'teacher_name': 'Acadium',
+          'subject': '',
           'xp_reward': 50,
-          'status': 'completed',
+          'status': 'available',
           'progress_current': 1,
           'progress_target': 1,
+          'created_at': _iso(_today.subtract(const Duration(days: 30))),
           'deadline': null,
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[],
+        },
+        <String, dynamic>{
+          'id': 'a1000001-0000-4000-8000-000000000008',
+          'type': 'quiz',
+          'title': 'Vocabulary check: Unit 6',
+          'description': 'Unit 6 dagi so\'zlar bo\'yicha tezkor test.',
+          'teacher_name': 'Dilnoza Karimova',
+          'subject': 'Ingliz tili',
+          'xp_reward': 80,
+          'status': 'completed',
+          'progress_current': 5,
+          'progress_target': 5,
+          'created_at': _iso(_today.subtract(const Duration(days: 7))),
+          'deadline': null,
+          'attachments': <String>[],
+          'questions': <Map<String, dynamic>>[],
+          'earned_xp': 64,
+          'result_comment': '5 ta savoldan 4 tasiga to\'g\'ri javob berdingiz.',
+          'completed_at': _iso(_today.subtract(const Duration(days: 6))),
         },
       ];
+
+  /// Testlarning to'g'ri javoblari (savol id → to'g'ri variant indeksi).
+  ///
+  /// Real backend'da bu ma'lumot serverda qoladi va mijozga hech qachon
+  /// yuborilmaydi. Shu sababli u model'da emas, "server tomoni"da turibdi.
+  static const Map<String, int> quizAnswerKey = <String, int>{
+    'q1-0001': 1,
+    'q1-0002': 0,
+    'q1-0003': 2,
+    'q1-0004': 3,
+    'q1-0005': 2,
+    'q2-0001': 0,
+    'q2-0002': 1,
+    'q2-0003': 2,
+    'q2-0004': 1,
+  };
 
   // ------------------------------------------------------- 7. Bildirishnomalar
 
@@ -527,7 +719,8 @@ class MockData {
           'type': 'lesson',
           'title': 'Dars eslatmasi',
           'body': 'Ertaga soat 14:00 da Matematika darsi bo\'ladi (301-xona).',
-          'created_at': _iso(DateTime.now().subtract(const Duration(hours: 20))),
+          'created_at':
+              _iso(DateTime.now().subtract(const Duration(hours: 20))),
           'is_read': false,
           'target_id': null,
         },
@@ -536,7 +729,8 @@ class MockData {
           'type': 'xp',
           'title': '+45 XP',
           'body': 'Uy vazifasi uchun XP qo\'shildi. Reytingda 2-o\'rindasiz!',
-          'created_at': _iso(DateTime.now().subtract(const Duration(days: 1, hours: 4))),
+          'created_at':
+              _iso(DateTime.now().subtract(const Duration(days: 1, hours: 4))),
           'is_read': true,
           'target_id': null,
         },

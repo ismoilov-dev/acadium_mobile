@@ -175,7 +175,8 @@ class XpHeroCard extends StatelessWidget {
                             child: Text(
                               'XP',
                               style: AppTextStyles.h3.copyWith(
-                                color: AppColors.onPrimary.withValues(alpha: 0.9),
+                                color:
+                                    AppColors.onPrimary.withValues(alpha: 0.9),
                               ),
                             ),
                           ),

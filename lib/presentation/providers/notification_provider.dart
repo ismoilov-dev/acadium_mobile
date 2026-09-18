@@ -58,9 +58,7 @@ class NotificationController
     if (current == null || studentId == null) return;
 
     state = AsyncValue<List<NotificationModel>>.data(
-      current
-          .map((NotificationModel n) => n.copyWith(isRead: true))
-          .toList(),
+      current.map((NotificationModel n) => n.copyWith(isRead: true)).toList(),
     );
     await _repository.markAllNotificationsRead(studentId);
   }

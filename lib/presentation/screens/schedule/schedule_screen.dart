@@ -87,7 +87,8 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                       itemCount: lessons.length,
                       separatorBuilder: (_, __) =>
                           const SizedBox(height: AppSpacing.md),
-                      itemBuilder: (_, int i) => _LessonCard(lesson: lessons[i]),
+                      itemBuilder: (_, int i) =>
+                          _LessonCard(lesson: lessons[i]),
                     ),
                   );
                 },

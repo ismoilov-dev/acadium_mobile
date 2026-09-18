@@ -9,6 +9,7 @@ import '../models/notification_model.dart';
 import '../models/student_model.dart';
 import '../models/xp_model.dart';
 import 'mock/mock_data.dart';
+import 'mock/mock_state.dart';
 import 'student_datasource.dart';
 
 /// [StudentDatasource]ning FAKE implementatsiyasi.
@@ -19,30 +20,25 @@ import 'student_datasource.dart';
 ///     qilinadi);
 ///  2. mock JSON'ni model'ga aylantirib qaytaradi.
 ///
-/// Mock JSON real backend formatiga mos, shuning uchun real datasource'ga
-/// o'tilganda model'larning `fromJson` kodi o'zgarmaydi.
+/// O'zgaruvchan ma'lumot (topshirilgan vazifalar, yig'ilgan XP, reyting)
+/// [MockState] ichida saqlanadi — u "fake server bazasi" vazifasini bajaradi.
 class FakeStudentDatasource implements StudentDatasource {
   FakeStudentDatasource(this._api);
 
   final ApiClient _api;
 
-  /// Sessiya davomida o'zgarishlarni saqlab turish uchun xotiradagi nusxalar
-  /// (masalan uy vazifasi topshirilganda status yangilanadi).
-  List<Map<String, dynamic>>? _homeworkCache;
-  List<Map<String, dynamic>>? _notificationCache;
-
-  List<Map<String, dynamic>> get _homework =>
-      _homeworkCache ??= MockData.homework();
-
-  List<Map<String, dynamic>> get _notifications =>
-      _notificationCache ??= MockData.notifications();
+  MockState get _db => MockState.instance;
 
   // --------------------------------------------------------------- Profil
 
   @override
   Future<StudentModel> getProfile(String studentId) async {
     await _api.send(method: 'GET', path: '/students/$studentId/');
-    return StudentModel.fromJson(MockData.student());
+
+    // Jami XP o'zgarib turadi, shuning uchun uni bazadan olamiz.
+    final Map<String, dynamic> json = MockData.student();
+    json['total_xp'] = _db.totalXp;
+    return StudentModel.fromJson(json);
   }
 
   // --------------------------------------------------------------- Jadval
@@ -70,22 +66,19 @@ class FakeStudentDatasource implements StudentDatasource {
   @override
   Future<List<HomeworkModel>> getHomework(String studentId) async {
     await _api.send(method: 'GET', path: '/students/$studentId/homeworks/');
-    final List<HomeworkModel> items = _homework
+    final List<HomeworkModel> items = _db.homework
         .map((Map<String, dynamic> json) => HomeworkModel.fromJson(json))
         .toList();
     // Eng yangi muddat birinchi bo'lsin.
-    items.sort((HomeworkModel a, HomeworkModel b) => b.dueAt.compareTo(a.dueAt));
+    items
+        .sort((HomeworkModel a, HomeworkModel b) => b.dueAt.compareTo(a.dueAt));
     return items;
   }
 
   @override
   Future<HomeworkModel> getHomeworkDetail(String homeworkId) async {
     await _api.send(method: 'GET', path: '/homeworks/$homeworkId/');
-    final Map<String, dynamic>? json = _findHomework(homeworkId);
-    if (json == null) {
-      throw const NotFoundException('Uy vazifasi topilmadi.');
-    }
-    return HomeworkModel.fromJson(json);
+    return HomeworkModel.fromJson(_requireHomework(homeworkId));
   }
 
   @override
@@ -96,10 +89,7 @@ class FakeStudentDatasource implements StudentDatasource {
       body: submission.toJson(),
     );
 
-    final Map<String, dynamic>? json = _findHomework(submission.homeworkId);
-    if (json == null) {
-      throw const NotFoundException('Uy vazifasi topilmadi.');
-    }
+    final Map<String, dynamic> json = _requireHomework(submission.homeworkId);
 
     if (submission.text.trim().isEmpty && submission.fileNames.isEmpty) {
       throw const ValidationException(
@@ -124,22 +114,23 @@ class FakeStudentDatasource implements StudentDatasource {
     final List<GradeModel> items = MockData.grades()
         .map((Map<String, dynamic> json) => GradeModel.fromJson(json))
         .toList();
-    items.sort((GradeModel a, GradeModel b) => b.gradedAt.compareTo(a.gradedAt));
+    items
+        .sort((GradeModel a, GradeModel b) => b.gradedAt.compareTo(a.gradedAt));
     return items;
   }
 
-  // ------------------------------------------------------------ XP / Arena
+  // -------------------------------------------------------------------- XP
 
   @override
   Future<int> getTotalXP(String studentId) async {
     await _api.send(method: 'GET', path: '/students/$studentId/xp/');
-    return MockData.totalXp;
+    return _db.totalXp;
   }
 
   @override
   Future<List<XpLogModel>> getXpLogs(String studentId) async {
     await _api.send(method: 'GET', path: '/students/$studentId/xp/logs/');
-    return MockData.xpLogs()
+    return _db.xpLogs
         .map((Map<String, dynamic> json) => XpLogModel.fromJson(json))
         .toList();
   }
@@ -147,17 +138,127 @@ class FakeStudentDatasource implements StudentDatasource {
   @override
   Future<List<LeaderboardEntry>> getLeaderboard(String groupId) async {
     await _api.send(method: 'GET', path: '/groups/$groupId/leaderboard/');
-    return MockData.leaderboard()
+    return _db.leaderboard
         .map((Map<String, dynamic> json) => LeaderboardEntry.fromJson(json))
         .toList();
   }
 
+  // ----------------------------------------------------------------- Arena
+
   @override
   Future<List<ArenaTaskModel>> getArenaTasks(String studentId) async {
     await _api.send(method: 'GET', path: '/students/$studentId/arena-tasks/');
-    return MockData.arenaTasks()
+    return _db.arenaTasks
         .map((Map<String, dynamic> json) => ArenaTaskModel.fromJson(json))
         .toList();
+  }
+
+  @override
+  Future<ArenaTaskModel> getArenaTask(String taskId) async {
+    await _api.send(method: 'GET', path: '/arena-tasks/$taskId/');
+    return ArenaTaskModel.fromJson(_requireTask(taskId));
+  }
+
+  @override
+  Future<ArenaTaskResult> submitArenaQuiz({
+    required String taskId,
+    required Map<String, int> answers,
+  }) async {
+    await _api.send(
+      method: 'POST',
+      path: '/arena-tasks/$taskId/submit/',
+      body: <String, dynamic>{'answers': answers},
+    );
+
+    final Map<String, dynamic> json = _requireTask(taskId);
+    _assertNotCompleted(json);
+
+    final List<Map<String, dynamic>> questions =
+        (json['questions'] as List<dynamic>).cast<Map<String, dynamic>>();
+
+    if (questions.isEmpty) {
+      throw const ValidationException('Bu topshiriqda savollar yo\'q.');
+    }
+    if (answers.length < questions.length) {
+      throw const ValidationException('Barcha savollarga javob bering.');
+    }
+
+    // Tekshirish SERVER tomonida bo'ladi — javob kaliti mijozga yuborilmagan.
+    int correct = 0;
+    for (final Map<String, dynamic> question in questions) {
+      final String id = question['id'] as String;
+      if (MockData.quizAnswerKey[id] == answers[id]) correct++;
+    }
+
+    final int xpReward = json['xp_reward'] as int;
+    final int earned = ((correct / questions.length) * xpReward).round();
+
+    return _complete(
+      json: json,
+      earnedXp: earned,
+      progressCurrent: correct,
+      comment: '${questions.length} ta savoldan $correct tasiga '
+          "to'g'ri javob berdingiz.",
+      message: correct == questions.length
+          ? 'Ajoyib! Barcha javoblar to\'g\'ri 🎉'
+          : 'Yaxshi natija! Xatolar ustida ishlang.',
+      correctCount: correct,
+      totalQuestions: questions.length,
+    );
+  }
+
+  @override
+  Future<ArenaTaskResult> submitArenaWork({
+    required String taskId,
+    required String text,
+    List<String> fileNames = const <String>[],
+  }) async {
+    await _api.send(
+      method: 'POST',
+      path: '/arena-tasks/$taskId/submit/',
+      body: <String, dynamic>{'text': text, 'files': fileNames},
+    );
+
+    final Map<String, dynamic> json = _requireTask(taskId);
+    _assertNotCompleted(json);
+
+    if (text.trim().isEmpty && fileNames.isEmpty) {
+      throw const ValidationException(
+        'Javob matnini yozing yoki fayl biriktiring.',
+      );
+    }
+
+    return _complete(
+      json: json,
+      earnedXp: json['xp_reward'] as int,
+      progressCurrent: json['progress_target'] as int,
+      comment: 'Topshiriq qabul qilindi. O\'qituvchi tez orada izoh qoldiradi.',
+      message: 'Topshiriq yuborildi!',
+    );
+  }
+
+  @override
+  Future<ArenaTaskResult> claimArenaReward(String taskId) async {
+    await _api.send(method: 'POST', path: '/arena-tasks/$taskId/claim/');
+
+    final Map<String, dynamic> json = _requireTask(taskId);
+    _assertNotCompleted(json);
+
+    final int current = json['progress_current'] as int;
+    final int target = json['progress_target'] as int;
+    if (current < target) {
+      throw const ValidationException(
+        'Chellenj hali tugamagan — mukofotni olish uchun uni yakunlang.',
+      );
+    }
+
+    return _complete(
+      json: json,
+      earnedXp: json['xp_reward'] as int,
+      progressCurrent: target,
+      comment: 'Chellenj bajarildi.',
+      message: 'Mukofot qo\'lga kiritildi!',
+    );
   }
 
   // ------------------------------------------------------- Bildirishnomalar
@@ -165,7 +266,7 @@ class FakeStudentDatasource implements StudentDatasource {
   @override
   Future<List<NotificationModel>> getNotifications(String studentId) async {
     await _api.send(method: 'GET', path: '/students/$studentId/notifications/');
-    final List<NotificationModel> items = _notifications
+    final List<NotificationModel> items = _db.notifications
         .map((Map<String, dynamic> json) => NotificationModel.fromJson(json))
         .toList();
     items.sort((NotificationModel a, NotificationModel b) =>
@@ -180,7 +281,7 @@ class FakeStudentDatasource implements StudentDatasource {
       path: '/notifications/$notificationId/',
       body: <String, dynamic>{'is_read': true},
     );
-    for (final Map<String, dynamic> json in _notifications) {
+    for (final Map<String, dynamic> json in _db.notifications) {
       if (json['id'] == notificationId) json['is_read'] = true;
     }
   }
@@ -191,17 +292,74 @@ class FakeStudentDatasource implements StudentDatasource {
       method: 'POST',
       path: '/students/$studentId/notifications/read-all/',
     );
-    for (final Map<String, dynamic> json in _notifications) {
+    for (final Map<String, dynamic> json in _db.notifications) {
       json['is_read'] = true;
     }
   }
 
   // ---------------------------------------------------------- yordamchilar
 
-  Map<String, dynamic>? _findHomework(String id) {
-    for (final Map<String, dynamic> json in _homework) {
+  /// Topshiriqni bajarilgan deb belgilaydi, XP qo'shadi va natijani qaytaradi.
+  /// Serverda bo'ladigan barcha yon ta'sirlar shu yerda takrorlanadi.
+  ArenaTaskResult _complete({
+    required Map<String, dynamic> json,
+    required int earnedXp,
+    required int progressCurrent,
+    required String comment,
+    required String message,
+    int? correctCount,
+    int? totalQuestions,
+  }) {
+    final int previousRank = _db.currentRank;
+
+    json['status'] = 'completed';
+    json['earned_xp'] = earnedXp;
+    json['progress_current'] = progressCurrent;
+    json['result_comment'] = comment;
+    json['completed_at'] = DateTime.now().toIso8601String();
+
+    final int totalXp = _db.awardXp(
+      amount: earnedXp,
+      reason: 'Arena: ${json['title']}',
+    );
+
+    _db.addNotification(
+      type: 'xp',
+      title: '+$earnedXp XP',
+      body: '"${json['title']}" topshirig\'i uchun XP qo\'shildi. '
+          'Jami: $totalXp XP.',
+      targetId: json['id'] as String,
+    );
+
+    return ArenaTaskResult(
+      taskId: json['id'] as String,
+      earnedXp: earnedXp,
+      totalXp: totalXp,
+      message: message,
+      correctCount: correctCount,
+      totalQuestions: totalQuestions,
+      newRank: _db.currentRank,
+      previousRank: previousRank,
+    );
+  }
+
+  void _assertNotCompleted(Map<String, dynamic> json) {
+    if (json['status'] == 'completed') {
+      throw const ValidationException('Bu topshiriq allaqachon bajarilgan.');
+    }
+  }
+
+  Map<String, dynamic> _requireTask(String id) {
+    for (final Map<String, dynamic> json in _db.arenaTasks) {
       if (json['id'] == id) return json;
     }
-    return null;
+    throw const NotFoundException('Topshiriq topilmadi.');
+  }
+
+  Map<String, dynamic> _requireHomework(String id) {
+    for (final Map<String, dynamic> json in _db.homework) {
+      if (json['id'] == id) return json;
+    }
+    throw const NotFoundException('Uy vazifasi topilmadi.');
   }
 }

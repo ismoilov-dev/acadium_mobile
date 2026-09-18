@@ -43,8 +43,28 @@ abstract class StudentDatasource {
   /// Guruh reytingi.
   Future<List<LeaderboardEntry>> getLeaderboard(String groupId);
 
-  /// Arena topshiriqlari.
+  /// Arena topshiriqlari (o'qituvchilar yuklagan).
   Future<List<ArenaTaskModel>> getArenaTasks(String studentId);
+
+  /// Bitta arena topshirig'i (savollari bilan).
+  Future<ArenaTaskModel> getArenaTask(String taskId);
+
+  /// Test javoblarini yuborish. [answers]: savol id → tanlangan variant indeksi.
+  /// To'g'ri javoblar server tomonida tekshiriladi.
+  Future<ArenaTaskResult> submitArenaQuiz({
+    required String taskId,
+    required Map<String, int> answers,
+  });
+
+  /// Ijodiy topshiriqni (matn/fayl) yuborish.
+  Future<ArenaTaskResult> submitArenaWork({
+    required String taskId,
+    required String text,
+    List<String> fileNames,
+  });
+
+  /// Bajarilgan chellenj uchun mukofotni olish.
+  Future<ArenaTaskResult> claimArenaReward(String taskId);
 
   /// Bildirishnomalar.
   Future<List<NotificationModel>> getNotifications(String studentId);

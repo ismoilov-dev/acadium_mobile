@@ -29,8 +29,7 @@ class PhoneInputFormatter extends TextInputFormatter {
 
 extension on String {
   /// Faqat birinchi 9 ta raqamni qoldiradi.
-  String get limitedToMaxDigits =>
-      length <= PhoneInputFormatter.maxDigits
-          ? this
-          : substring(0, PhoneInputFormatter.maxDigits);
+  String get limitedToMaxDigits => length <= PhoneInputFormatter.maxDigits
+      ? this
+      : substring(0, PhoneInputFormatter.maxDigits);
 }

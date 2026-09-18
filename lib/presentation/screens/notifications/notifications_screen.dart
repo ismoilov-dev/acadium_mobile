@@ -50,8 +50,7 @@ class NotificationsScreen extends ConsumerWidget {
 
             return RefreshIndicator(
               color: AppColors.primary,
-              onRefresh: () =>
-                  ref.read(notificationsProvider.notifier).load(),
+              onRefresh: () => ref.read(notificationsProvider.notifier).load(),
               child: ListView.separated(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 itemCount: items.length,
